@@ -146,7 +146,7 @@ export default function NewListing() {
   // ─── Submit ───────────────────────────────────────────────────────────────
 
   const onSubmit = async (data: ListingForm) => {
-    if (!profile) return
+    if (!profile) { toast.error('Your profile is still loading. Please wait a moment and try again.'); return }
     if (!paymentDone) { toast.error('Complete the $50 listing fee payment first.'); return }
 
     try {
