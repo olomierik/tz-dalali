@@ -5,15 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin } from "lucide-react";
 import { useCountries, useRegions, useDistricts } from "@/hooks/useCountries";
-
-const DEAL_TYPES = [
-  { value: "sale" as const, label: "Buy" },
-  { value: "rent" as const, label: "Rent" },
-  { value: "lease" as const, label: "Lease" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const HeroSearch = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [dealType, setDealType] = useState<"sale" | "rent" | "lease">("sale");
   const [countryId, setCountryId] = useState("");
   const [regionId, setRegionId] = useState("");
@@ -23,6 +19,12 @@ export const HeroSearch = () => {
   const { data: countries = [], isLoading: cLoading } = useCountries();
   const { data: regions = [] } = useRegions(countryId || null);
   const { data: districts = [] } = useDistricts(regionId || null);
+
+  const dealTypes = [
+    { value: "sale" as const, label: t('search.buy') },
+    { value: "rent" as const, label: t('search.rent') },
+    { value: "lease" as const, label: t('search.lease') },
+  ];
 
   const handleCountryChange = (v: string) => {
     setCountryId(v);
@@ -52,7 +54,7 @@ export const HeroSearch = () => {
     >
       {/* Deal type tabs */}
       <div className="flex gap-1 mb-4 bg-muted/60 rounded-lg p-1 w-fit">
-        {DEAL_TYPES.map(({ value, label }) => (
+        {dealTypes.map(({ value, label }) => (
           <button
             key={value}
             type="button"
@@ -74,10 +76,10 @@ export const HeroSearch = () => {
         <Select value={countryId} onValueChange={handleCountryChange} disabled={cLoading}>
           <SelectTrigger className="h-12 bg-background gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-gold shrink-0" />
-            <SelectValue placeholder={cLoading ? "Loading…" : "Any country"} />
+            <SelectValue placeholder={cLoading ? t('listings.loading') : t('search.country')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any country</SelectItem>
+            <SelectItem value="">{t('search.country')}</SelectItem>
             {countries.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.flag_emoji ? `${c.flag_emoji} ` : ""}{c.name}
@@ -93,10 +95,10 @@ export const HeroSearch = () => {
           disabled={!countryId || regions.length === 0}
         >
           <SelectTrigger className="h-12 bg-background">
-            <SelectValue placeholder="Any region" />
+            <SelectValue placeholder={t('search.region')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any region</SelectItem>
+            <SelectItem value="">{t('search.region')}</SelectItem>
             {regions.map((r) => (
               <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
             ))}
@@ -110,10 +112,10 @@ export const HeroSearch = () => {
           disabled={!regionId || districts.length === 0}
         >
           <SelectTrigger className="h-12 bg-background">
-            <SelectValue placeholder="Any district" />
+            <SelectValue placeholder={t('search.district')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any district</SelectItem>
+            <SelectItem value="">{t('search.district')}</SelectItem>
             {districts.map((d) => (
               <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
             ))}
@@ -122,7 +124,7 @@ export const HeroSearch = () => {
 
         {/* Keyword */}
         <Input
-          placeholder="Property type, neighbourhood…"
+          placeholder={t('search.keyword_ph')}
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           className="h-12 bg-background"
@@ -131,7 +133,7 @@ export const HeroSearch = () => {
         {/* Search */}
         <Button type="submit" variant="gold" size="lg" className="h-12 px-7 gap-2 sm:col-span-2 lg:col-span-1">
           <Search className="h-4 w-4" />
-          Search
+          {t('search.button')}
         </Button>
       </div>
     </form>

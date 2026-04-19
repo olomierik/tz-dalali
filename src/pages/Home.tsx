@@ -6,6 +6,7 @@ import heroVilla from "@/assets/hero-villa.jpg";
 import { useCountries, type Country } from "@/hooks/useCountries";
 import { useProperties, type Property } from "@/hooks/useProperties";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Building2,
   Home as HomeIcon,
@@ -19,59 +20,11 @@ import {
   MapPin,
 } from "lucide-react";
 
-// ─── Static page data ─────────────────────────────────────────────────────────
-
-const categories = [
-  {
-    icon: HomeIcon,
-    label: "Residential",
-    desc: "Houses, apartments, villas, and land across every country — legally transferred with title guarantee.",
-    to: "/listings?type=sale",
-  },
-  {
-    icon: Building2,
-    label: "Rentals & Leases",
-    desc: "Short-term and long-term rental agreements handled end-to-end with TzDalali-verified contracts.",
-    to: "/listings?type=rent",
-  },
-  {
-    icon: Store,
-    label: "Commercial",
-    desc: "Offices, warehouses, hotels, and investment assets. Global reach with local legal expertise.",
-    to: "/listings?type=commercial",
-  },
-];
-
-const trustFeatures = [
-  { icon: Scale, title: "Legal Guarantee", desc: "Verified law firm partner in every country" },
-  { icon: Lock, title: "Escrow-Protected", desc: "Your funds held safely until transfer complete" },
-  { icon: BadgeCheck, title: "Verified Partners", desc: "Vetted law firms and tax consultants globally" },
-  { icon: Globe2, title: "Every Country", desc: "Active in 195 countries and growing" },
-];
-
-const howItWorks = [
-  {
-    step: "01",
-    title: "List for $50",
-    desc: "Property owners pay a one-time $50 flat fee to list on TzDalali. Your property goes live globally.",
-  },
-  {
-    step: "02",
-    title: "TzDalali Acts as Your Broker",
-    desc: "When a buyer proceeds, TzDalali assigns a verified local law firm and tax consultant to the deal.",
-  },
-  {
-    step: "03",
-    title: "Legally Guaranteed Completion",
-    desc: "8-step transaction flow: due diligence, tax clearance, contract, escrow, title transfer — all handled.",
-  },
-];
-
 // ─── Featured country pills ───────────────────────────────────────────────────
 
 const HIGHLIGHT_ISO = ["TZ", "KE", "UG", "RW", "ET", "CD", "MZ", "MG"];
 
-function FeaturedLocations() {
+function FeaturedLocations({ t }: { t: (key: string) => string }) {
   const navigate = useNavigate();
   const { data: countries = [] } = useCountries();
 
@@ -83,7 +36,7 @@ function FeaturedLocations() {
 
   return (
     <div className="mb-16">
-      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4 text-center">Browse by Country</p>
+      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4 text-center">{t("home.cat_countries")}</p>
       <div className="flex flex-wrap justify-center gap-2.5">
         {featured.map((c) => (
           <button
@@ -102,7 +55,7 @@ function FeaturedLocations() {
           className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-dashed border-border bg-transparent hover:border-gold text-sm text-muted-foreground hover:text-foreground transition-all"
         >
           <Globe2 className="h-3.5 w-3.5" />
-          All countries
+          {t("home.cat_all")}
         </button>
       </div>
     </div>
@@ -175,7 +128,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 // ─── Nearby / latest properties section ──────────────────────────────────────
 
-function NearbyPropertiesSection() {
+function NearbyPropertiesSection({ t }: { t: (key: string) => string }) {
   const { profile, loading: authLoading } = useAuthContext();
   const { data: countries = [] } = useCountries();
 
@@ -218,11 +171,11 @@ function NearbyPropertiesSection() {
     : undefined;
 
   const heading = regionName ?? countryName
-    ? `Properties in ${regionName ?? countryName}`
-    : "Latest Listings";
+    ? t("home.nearby_title_loc").replace("{location}", regionName ?? countryName ?? "")
+    : t("home.nearby_title_global");
   const subheading = countryName
-    ? "Based on your registered location"
-    : "Recently listed across the globe";
+    ? t("home.nearby_location")
+    : t("home.nearby_global");
   const browseHref = regionId
     ? `/listings?region=${regionId}`
     : countryId
@@ -240,7 +193,7 @@ function NearbyPropertiesSection() {
         </div>
         <Button asChild variant="outline" size="sm" className="hidden sm:flex gap-1.5 shrink-0">
           <Link to={browseHref}>
-            View all <ArrowRight className="h-3.5 w-3.5" />
+            {t("home.view_all")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
@@ -254,7 +207,7 @@ function NearbyPropertiesSection() {
       <div className="mt-6 text-center sm:hidden">
         <Button asChild variant="outline" size="sm">
           <Link to={browseHref}>
-            View all listings <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            {t("home.view_all")} <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </Link>
         </Button>
       </div>
@@ -265,6 +218,54 @@ function NearbyPropertiesSection() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const Home = () => {
+  const { t } = useLanguage();
+
+  const categories = [
+    {
+      icon: HomeIcon,
+      label: t("home.cat_residential"),
+      desc: t("home.cat_residential_desc"),
+      to: "/listings?type=sale",
+    },
+    {
+      icon: Building2,
+      label: t("home.cat_rentals"),
+      desc: t("home.cat_rentals_desc"),
+      to: "/listings?type=rent",
+    },
+    {
+      icon: Store,
+      label: t("home.cat_commercial"),
+      desc: t("home.cat_commercial_desc"),
+      to: "/listings?property_type=commercial",
+    },
+  ];
+
+  const trustFeatures = [
+    { icon: Scale, title: t("home.trust_legal"), desc: t("home.trust_legal_desc") },
+    { icon: Lock, title: t("home.trust_escrow"), desc: t("home.trust_escrow_desc") },
+    { icon: BadgeCheck, title: t("home.trust_partners"), desc: t("home.trust_partners_desc") },
+    { icon: Globe2, title: t("home.trust_global"), desc: t("home.trust_global_desc") },
+  ];
+
+  const howItWorks = [
+    {
+      step: "01",
+      title: t("home.step1_title"),
+      desc: t("home.step1_desc"),
+    },
+    {
+      step: "02",
+      title: t("home.step2_title"),
+      desc: t("home.step2_desc"),
+    },
+    {
+      step: "03",
+      title: t("home.step3_title"),
+      desc: t("home.step3_desc"),
+    },
+  ];
+
   return (
     <>
       {/* Hero */}
@@ -281,14 +282,13 @@ const Home = () => {
           <div className="relative container h-full flex flex-col justify-end pb-20 md:pb-28">
             <div className="max-w-3xl text-primary-foreground animate-fade-in">
               <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-4">
-                Your Trusted Global Property Broker
+                {t("hero.tagline")}
               </span>
               <h1 className="font-serif text-5xl md:text-7xl leading-[1.05] mb-6">
-                Buy and sell property <em className="text-gold not-italic">anywhere</em> on Earth.
+                {t("hero.title_1")}<em className="text-gold not-italic">{t("hero.title_em")}</em>{t("hero.title_2")}
               </h1>
               <p className="text-lg md:text-xl opacity-90 max-w-xl mb-8 font-light">
-                Legally guaranteed, escrow-protected, with verified local law firms and tax
-                consultants in every country.{" "}
+                {t("hero.body")}{" "}
                 <span className="text-gold/90">Dalali Wako wa Kweli Duniani Kote.</span>
               </p>
             </div>
@@ -301,10 +301,10 @@ const Home = () => {
 
       {/* Country pills + Categories */}
       <section className="container pt-32 md:pt-40">
-        <FeaturedLocations />
+        <FeaturedLocations t={t} />
         <div className="text-center mb-14">
-          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">Browse</span>
-          <h2 className="font-serif text-4xl md:text-5xl text-primary mb-4">Find your property</h2>
+          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("home.browse_label")}</span>
+          <h2 className="font-serif text-4xl md:text-5xl text-primary mb-4">{t("home.browse_title")}</h2>
           <div className="gold-divider mx-auto" />
         </div>
         <div className="grid md:grid-cols-3 gap-6">
@@ -320,7 +320,7 @@ const Home = () => {
               <h3 className="font-serif text-2xl text-primary mb-2">{c.label}</h3>
               <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{c.desc}</p>
               <span className="inline-flex items-center gap-1 text-sm text-gold font-medium">
-                Explore <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {t("home.explore")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
           ))}
@@ -328,13 +328,13 @@ const Home = () => {
       </section>
 
       {/* Properties near the user (or latest global) */}
-      <NearbyPropertiesSection />
+      <NearbyPropertiesSection t={t} />
 
       {/* How It Works */}
       <section className="container py-24 md:py-32">
         <div className="text-center mb-14">
-          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">Process</span>
-          <h2 className="font-serif text-4xl md:text-5xl text-primary mb-4">How TzDalali works</h2>
+          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("home.process_label")}</span>
+          <h2 className="font-serif text-4xl md:text-5xl text-primary mb-4">{t("home.process_title")}</h2>
           <div className="gold-divider mx-auto" />
         </div>
         <div className="grid md:grid-cols-3 gap-8">
@@ -350,7 +350,7 @@ const Home = () => {
         </div>
         <div className="text-center mt-12">
           <Button asChild variant="outline" size="lg">
-            <Link to="/how-it-works">Full Transaction Guide</Link>
+            <Link to="/how-it-works">{t("home.guide")}</Link>
           </Button>
         </div>
       </section>
@@ -359,22 +359,20 @@ const Home = () => {
       <section className="container pb-24 md:pb-32">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">Why TzDalali</span>
+            <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("home.why_label")}</span>
             <h2 className="font-serif text-4xl md:text-5xl text-primary mb-6 leading-tight">
-              Every deal backed by real legal protection.
+              {t("home.why_title")}
             </h2>
             <div className="gold-divider mb-6" />
             <p className="text-muted-foreground leading-relaxed mb-8">
-              TzDalali earns only when your deal closes — 10% commission split between the platform,
-              your assigned law firm (3%), and your tax consultant (2%). No hidden fees.
-              A transparent, legally guaranteed transaction every time.
+              {t("home.why_body")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild variant="gold" size="lg">
-                <Link to="/listings">Browse Properties</Link>
+                <Link to="/listings">{t("home.browse_props")}</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/pricing">See Commission Breakdown</Link>
+                <Link to="/pricing">{t("home.commission")}</Link>
               </Button>
             </div>
           </div>
@@ -393,19 +391,18 @@ const Home = () => {
       {/* Seller / Listing CTA */}
       <section className="bg-primary text-primary-foreground">
         <div className="container py-20 text-center">
-          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">For Property Owners</span>
-          <h2 className="font-serif text-4xl md:text-5xl mb-4">List your property for just $50.</h2>
+          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("home.seller_label")}</span>
+          <h2 className="font-serif text-4xl md:text-5xl mb-4">{t("home.seller_title")}</h2>
           <p className="text-gold/80 italic mb-2">Dalali Wako wa Kweli Duniani Kote</p>
           <p className="opacity-80 max-w-2xl mx-auto mb-8 font-light">
-            One flat fee. Your property reaches buyers worldwide. TzDalali earns only when you close —
-            10% commission on the deal value, handled through our verified partner network.
+            {t("home.seller_body")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild variant="gold" size="lg">
-              <Link to="/seller/listings/new">List a Property — $50</Link>
+              <Link to="/seller/listings/new">{t("home.list_cta")}</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-              <Link to="/partners">Become a Partner Firm</Link>
+              <Link to="/partners">{t("home.partner_cta")}</Link>
             </Button>
           </div>
         </div>
