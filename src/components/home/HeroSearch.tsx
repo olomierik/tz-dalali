@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, MapPin } from "lucide-react";
 import { useCountries, useRegions, useDistricts } from "@/hooks/useCountries";
 
+const ANY_LOCATION = "__any__";
+
 const DEAL_TYPES = [
   { value: "sale" as const, label: "Buy" },
   { value: "rent" as const, label: "Rent" },
@@ -71,13 +73,13 @@ export const HeroSearch = () => {
       {/* Location + keyword row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2.5">
         {/* Country */}
-        <Select value={countryId} onValueChange={handleCountryChange} disabled={cLoading}>
+        <Select value={countryId || ANY_LOCATION} onValueChange={(value) => handleCountryChange(value === ANY_LOCATION ? "" : value)} disabled={cLoading}>
           <SelectTrigger className="h-12 bg-background gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-gold shrink-0" />
             <SelectValue placeholder={cLoading ? "Loading…" : "Any country"} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any country</SelectItem>
+            <SelectItem value={ANY_LOCATION}>Any country</SelectItem>
             {countries.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.flag_emoji ? `${c.flag_emoji} ` : ""}{c.name}
@@ -87,16 +89,16 @@ export const HeroSearch = () => {
         </Select>
 
         {/* Region */}
-        <Select
-          value={regionId}
-          onValueChange={handleRegionChange}
+          <Select
+            value={regionId || ANY_LOCATION}
+            onValueChange={(value) => handleRegionChange(value === ANY_LOCATION ? "" : value)}
           disabled={!countryId || regions.length === 0}
         >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any region" />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any region</SelectItem>
+            <SelectItem value={ANY_LOCATION}>Any region</SelectItem>
             {regions.map((r) => (
               <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
             ))}
@@ -104,16 +106,16 @@ export const HeroSearch = () => {
         </Select>
 
         {/* District */}
-        <Select
-          value={districtId}
-          onValueChange={setDistrictId}
+          <Select
+            value={districtId || ANY_LOCATION}
+            onValueChange={(value) => setDistrictId(value === ANY_LOCATION ? "" : value)}
           disabled={!regionId || districts.length === 0}
         >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any district" />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">Any district</SelectItem>
+            <SelectItem value={ANY_LOCATION}>Any district</SelectItem>
             {districts.map((d) => (
               <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
             ))}
