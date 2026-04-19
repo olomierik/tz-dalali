@@ -10,10 +10,6 @@ export interface UploadedImage {
 const BUCKET = 'property-images'
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 
-function sanitizeFilename(name: string): string {
-  return name.replace(/[^a-z0-9._-]/gi, '_').toLowerCase()
-}
-
 export function usePropertyImageUpload() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,28 +18,18 @@ export function usePropertyImageUpload() {
     file: File,
     sellerId: string,
     slot: number
-  ): Promise<UploadedImage | null> => {
-    if (file.size > MAX_FILE_SIZE) {
-      setError(`${file.name} exceeds 5 MB limit`)
-      return null
-    }
-    if (!file.type.startsWith('image/')) {
-      setError(`${file.name} is not an image`)
-      return null
-    }
+  ): Promise<UploadedImage> => {
+    if (file.size > MAX_FILE_SIZE) throw new Error(`${file.name} exceeds 5 MB limit`)
+    if (!file.type.startsWith('image/')) throw new Error(`${file.name} is not an image`)
 
-    const ext = file.name.split('.').pop() ?? 'jpg'
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
     const path = `${sellerId}/${Date.now()}_slot${slot}.${ext}`
 
-    setError(null)
     const { error: uploadError } = await (supabase as any).storage
       .from(BUCKET)
-      .upload(path, file, { upsert: true })
+      .upload(path, file, { upsert: true, contentType: file.type })
 
-    if (uploadError) {
-      setError(uploadError.message)
-      return null
-    }
+    if (uploadError) throw new Error(uploadError.message)
 
     const { data } = (supabase as any).storage.from(BUCKET).getPublicUrl(path)
     return { url: data.publicUrl as string, path, caption: '' }
@@ -59,13 +45,19 @@ export function usePropertyImageUpload() {
     startSlot = 0
   ): Promise<UploadedImage[]> => {
     setUploading(true)
-    const results: UploadedImage[] = []
-    for (let i = 0; i < files.length; i++) {
-      const result = await uploadImage(files[i], sellerId, startSlot + i)
-      if (result) results.push(result)
+    setError(null)
+    try {
+      const results = await Promise.all(
+        files.map((file, i) => uploadImage(file, sellerId, startSlot + i))
+      )
+      return results
+    } catch (err: any) {
+      const msg = err?.message ?? 'Image upload failed'
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
-    return results
   }, [uploadImage])
 
   return { uploadImage, uploadMultiple, removeImage, uploading, error }

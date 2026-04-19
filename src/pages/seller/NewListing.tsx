@@ -404,7 +404,7 @@ export default function NewListing() {
                     <SelectContent className="max-h-64 overflow-y-auto">
                       {countries.map(c => (
                         <SelectItem key={c.id} value={c.id}>
-                          <span className="mr-2">{c.flag_emoji}</span>{c.name}
+                          {c.flag_emoji ? <span className="mr-2">{c.flag_emoji}</span> : null}{c.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
