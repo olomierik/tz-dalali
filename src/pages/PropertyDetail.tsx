@@ -17,6 +17,7 @@ import { PriceDisplay } from '@/components/common/PriceDisplay'
 import { useProperty, useProperties, useSavedProperties, useSaveProperty } from '@/hooks/useProperties'
 import { useCreateTransaction } from '@/hooks/useTransactions'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useCountries, useRegions, useDistricts } from '@/hooks/useCountries'
 import { useToast } from '@/hooks/use-toast'
 
 const FALLBACK = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80'
@@ -58,6 +59,7 @@ function ImageGallery({ featured, images }: { featured: string | null; images: u
 function InitiateDialog({ open, onClose, property }: { open: boolean; onClose: () => void; property: ReturnType<typeof useProperty>['data'] }) {
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { user } = useAuthContext()
   const { mutateAsync: createTx, isPending } = useCreateTransaction()
   const [sourceOfFunds, setSourceOfFunds] = useState('')
   const [intendedUse, setIntendedUse] = useState('')
@@ -80,11 +82,11 @@ function InitiateDialog({ open, onClose, property }: { open: boolean; onClose: (
     try {
       const tx = await createTx({
         property_id: property.id,
-        deal_type: property.deal_type,
+        buyer_id: user!.id,
+        seller_id: property.seller_id,
         agreed_price: property.price,
-        agreed_currency: property.price_currency,
-        source_of_funds: sourceOfFunds,
-        intended_use: intendedUse,
+        currency: property.price_currency,
+        notes: [sourceOfFunds && `Source of funds: ${sourceOfFunds}`, intendedUse && `Intended use: ${intendedUse}`].filter(Boolean).join('\n') || null,
       })
       toast({ title: 'Transaction initiated!', description: `Reference: ${tx.reference_code}` })
       onClose()
@@ -151,6 +153,10 @@ export default function PropertyDetail() {
   const [txDialog, setTxDialog] = useState(false)
   const { data: similar = [] } = useProperties({ property_type: property?.property_type, country_id: property?.country_id ?? undefined, status: 'active' })
 
+  const { data: countries = [] } = useCountries()
+  const { data: regions = [] } = useRegions(property?.country_id)
+  const { data: districts = [] } = useDistricts(property?.region_id)
+
   if (isLoading) return (
     <div className="container py-8 space-y-4">
       <Skeleton className="h-8 w-48" />
@@ -210,11 +216,16 @@ export default function PropertyDetail() {
               <h1 className="font-serif text-3xl md:text-4xl text-primary leading-tight mb-3">{property.title}</h1>
               <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
                 <MapPin className="h-4 w-4 text-gold" />
-                <span>{[property.neighborhood, property.district_id && 'District', property.region_id && 'Region'].filter(Boolean).join(', ') || property.full_address || 'Location available on enquiry'}</span>
+                <span>{[
+                  property.neighborhood,
+                  districts.find(d => d.id === property.district_id)?.name,
+                  regions.find(r => r.id === property.region_id)?.name,
+                  countries.find(c => c.id === property.country_id)?.name,
+                ].filter(Boolean).join(', ') || 'Location available on enquiry'}</span>
               </div>
             </div>
 
-            <PriceDisplay price={property.price} currency={property.price_currency} priceUsd={property.price_usd} negotiable={property.price_negotiable ?? false} period={property.price_period ?? undefined} size="lg" />
+            <PriceDisplay price={property.price} currency={property.price_currency} priceUsd={property.price_usd} negotiable={property.price_negotiable ?? false} period={property.rent_period ?? undefined} size="lg" />
 
             {/* Key stats */}
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -299,7 +310,7 @@ export default function PropertyDetail() {
           {/* Right: CTA sidebar */}
           <div className="lg:sticky lg:top-24 space-y-4 self-start">
             <div className="bg-card border border-border rounded-lg p-5 shadow-card">
-              <PriceDisplay price={property.price} currency={property.price_currency} negotiable={property.price_negotiable ?? false} period={property.price_period ?? undefined} size="lg" className="mb-4" />
+              <PriceDisplay price={property.price} currency={property.price_currency} negotiable={property.price_negotiable ?? false} period={property.rent_period ?? undefined} size="lg" className="mb-4" />
               <Button variant="gold" size="lg" className="w-full mb-3" onClick={handleProceed}>
                 {property.deal_type === 'sale' ? 'Proceed to Buy' : 'Proceed to Rent'}
               </Button>

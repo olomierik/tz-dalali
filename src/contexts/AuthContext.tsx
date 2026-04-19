@@ -23,7 +23,7 @@ interface AuthContextType {
   profile: UserProfile | null
   role: string | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signIn: (email: string, password: string) => Promise<{ error: string | null; role: string | null }>
   signUp: (email: string, password: string, fullName: string, role?: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: string | null }>
@@ -133,9 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const profileData = await fetchProfile(data.user.id)
         setProfile(profileData)
+        return { error: null, role: profileData?.role ?? null }
       }
 
-      return { error: null }
+      return { error: null, role: null }
     } catch (err) {
       console.error('[AuthContext] signIn unexpected error:', err)
       return { error: 'An unexpected error occurred. Please try again.' }
