@@ -96,7 +96,11 @@ export function useProperties(filters: PropertyFilters = {}) {
       let query = (supabase as any)
         .from('properties')
         .select('*')
-        .eq('status', filters.status ?? 'active')
+
+      // 'any' skips status filter — used for seller's own listings view
+      if (filters.status !== 'any') {
+        query = query.eq('status', filters.status ?? 'active')
+      }
 
       if (filters.deal_type) query = query.eq('deal_type', filters.deal_type)
       if (filters.property_type) query = query.eq('property_type', filters.property_type)

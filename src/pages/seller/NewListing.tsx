@@ -189,7 +189,7 @@ export default function NewListing() {
         featured_image: featuredImage,
         images: imageUrls,
         seller_id: profile.id,
-        status: 'draft' as const,
+        status: 'active' as const,
         latitude: null,
         longitude: null,
         is_featured: false,
@@ -200,7 +200,7 @@ export default function NewListing() {
         toast.success('Listing updated successfully')
       } else {
         await createProperty.mutateAsync(payload)
-        toast.success('Listing submitted! It will go live after admin review.')
+        toast.success('Listing is now live! Buyers can find it immediately.')
       }
 
       setUploadProgress(100)
