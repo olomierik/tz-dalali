@@ -31,6 +31,8 @@ const listingSchema = z.object({
   country_id: z.string().optional().transform(v => v || undefined),
   region_id: z.string().optional().transform(v => v || undefined),
   district_id: z.string().optional().transform(v => v || undefined),
+  region_name: z.string().optional(),   // free-text when no DB regions exist
+  district_name: z.string().optional(), // free-text when no DB districts exist
   neighborhood: z.string().optional(),
   price: z.number({ invalid_type_error: 'Enter a valid price' }).min(1, 'Price must be greater than 0'),
   price_currency: z.string().min(1),
@@ -169,6 +171,11 @@ export default function NewListing() {
       const featuredImage = allUploaded[0]?.url ?? null
       const imageUrls = allUploaded.map(u => u.url)
 
+      // Combine free-text region/district names (for countries without DB entries)
+      // into the neighborhood field so they're saved and searchable.
+      const extraLocation = [data.region_name, data.district_name].filter(Boolean).join(', ')
+      const fullNeighborhood = [extraLocation, data.neighborhood].filter(Boolean).join(', ') || null
+
       const payload = {
         title: data.title,
         description: data.description,
@@ -183,9 +190,10 @@ export default function NewListing() {
         bathrooms: data.bathrooms ?? null,
         size_sqm: data.size_sqm ?? null,
         country_id: data.country_id || null,
-        region_id: data.region_id || null,
-        district_id: data.district_id || null,
-        neighborhood: data.neighborhood || null,
+        // Only write UUIDs — text strings must never go into FK columns
+        region_id: regions.length > 0 ? (data.region_id || null) : null,
+        district_id: districts.length > 0 ? (data.district_id || null) : null,
+        neighborhood: fullNeighborhood,
         featured_image: featuredImage,
         images: imageUrls,
         seller_id: profile.id,
@@ -442,15 +450,16 @@ export default function NewListing() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input {...register('region_id')} placeholder="Type region / state name" />
+                      // No DB regions for this country — safe text fallback (saved to neighborhood)
+                      <Input {...register('region_name')} placeholder="e.g. Lagos State, Greater Accra, Nairobi County" />
                     )}
                   </div>
                 )}
 
-                {/* District */}
+                {/* District — only shown when DB has district data for the selected region */}
                 {regionId && (
                   <div className="space-y-1.5">
-                    <Label>District / City</Label>
+                    <Label>District</Label>
                     {districtsLoading ? (
                       <div className="h-10 rounded-md border border-border bg-muted animate-pulse" />
                     ) : districts.length > 0 ? (
@@ -464,16 +473,25 @@ export default function NewListing() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input {...register('district_id')} placeholder="Type district / city name" />
+                      // No DB districts — safe text fallback (saved to neighborhood)
+                      <Input {...register('district_name')} placeholder="e.g. Westlands, Victoria Island, Tema" />
                     )}
+                  </div>
+                )}
+
+                {/* City / Town — shown for countries without any DB region data */}
+                {countryId && !regionsLoading && regions.length === 0 && (
+                  <div className="space-y-1.5">
+                    <Label>City / Town</Label>
+                    <Input {...register('district_name')} placeholder="e.g. Nairobi, Kampala, Accra" />
                   </div>
                 )}
 
                 {/* Neighborhood */}
                 <div className="space-y-1.5">
-                  <Label>Street / Neighborhood</Label>
-                  <Input {...register('neighborhood')} placeholder="e.g. Oyster Bay, Masaki, Kinondoni" />
-                  <p className="text-xs text-muted-foreground">Be as specific as you're comfortable with.</p>
+                  <Label>Street / Neighbourhood</Label>
+                  <Input {...register('neighborhood')} placeholder="e.g. Oyster Bay, Westlands, Victoria Island" />
+                  <p className="text-xs text-muted-foreground">The more specific, the more enquiries you'll attract.</p>
                 </div>
               </CardContent>
             </>
