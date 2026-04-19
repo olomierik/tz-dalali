@@ -124,14 +124,14 @@ function FilterPanel({
               <div className="h-9 rounded-md border border-border bg-muted animate-pulse" />
             ) : regions.length > 0 ? (
               <Select
-                value={filters.region_id ?? ''}
-                onValueChange={v => onChange({ region_id: v || undefined, district_id: undefined })}
+                value={filters.region_id ?? '__any__'}
+                onValueChange={v => onChange({ region_id: v === '__any__' ? undefined : v, district_id: undefined })}
               >
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Any region" />
                 </SelectTrigger>
                 <SelectContent className="max-h-64 overflow-y-auto">
-                  <SelectItem value="">Any region</SelectItem>
+                  <SelectItem value="__any__">Any region</SelectItem>
                   {regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
