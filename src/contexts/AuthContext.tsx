@@ -113,12 +113,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchProfile])
 
-  const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
+  const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null; role: string | null }> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
 
       if (error) {
-        return { error: mapSupabaseError(error.message) }
+        return { error: mapSupabaseError(error.message), role: null }
       }
 
       if (data.user) {
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null, role: null }
     } catch (err) {
       console.error('[AuthContext] signIn unexpected error:', err)
-      return { error: 'An unexpected error occurred. Please try again.' }
+      return { error: 'An unexpected error occurred. Please try again.', role: null }
     }
   }, [fetchProfile])
 
