@@ -16,6 +16,8 @@ interface UserProfile {
   country_id: string | null
   region_id: string | null
   district_id: string | null
+  total_deals?: number | null
+  total_spent?: number | null
 }
 
 interface AuthContextType {
