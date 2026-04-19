@@ -1,20 +1,25 @@
+import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import heroVilla from "@/assets/hero-villa.jpg";
 import { useCountries, type Country } from "@/hooks/useCountries";
+import { useProperties, type Property } from "@/hooks/useProperties";
+import { useAuthContext } from "@/contexts/AuthContext";
 import {
   Building2,
   Home as HomeIcon,
   Store,
   ArrowRight,
   ShieldCheck,
-  Handshake,
   Scale,
   Globe2,
   BadgeCheck,
   Lock,
+  MapPin,
 } from "lucide-react";
+
+// ─── Static page data ─────────────────────────────────────────────────────────
 
 const categories = [
   {
@@ -62,6 +67,8 @@ const howItWorks = [
   },
 ];
 
+// ─── Featured country pills ───────────────────────────────────────────────────
+
 const HIGHLIGHT_ISO = ["TZ", "KE", "UG", "RW", "ET", "CD", "MZ", "MG"];
 
 function FeaturedLocations() {
@@ -102,6 +109,161 @@ function FeaturedLocations() {
   );
 }
 
+// ─── Property photo card (image-dominant) ─────────────────────────────────────
+
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80";
+
+function PropertyPhotoCard({ property }: { property: Property }) {
+  const fmt = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+    notation: "compact",
+  });
+
+  return (
+    <Link
+      to={`/listings/${property.id}`}
+      className="group relative block aspect-[4/3] rounded-xl overflow-hidden shadow-card hover:shadow-luxe transition-all duration-500"
+    >
+      <img
+        src={property.featured_image || FALLBACK_IMG}
+        alt={property.title}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        loading="lazy"
+        onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+      />
+      {/* Dark gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+
+      {/* Deal type badge */}
+      <span className={`absolute top-3 left-3 text-xs font-semibold px-2 py-1 rounded ${
+        property.deal_type === "sale"
+          ? "bg-primary text-primary-foreground"
+          : property.deal_type === "rent"
+          ? "bg-gold text-white"
+          : "bg-white/80 text-foreground"
+      }`}>
+        {property.deal_type === "sale" ? "For Sale" : property.deal_type === "rent" ? "For Rent" : "Lease"}
+      </span>
+
+      {/* Bottom info overlay */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+        <p className="font-serif text-base font-semibold leading-tight line-clamp-1 mb-0.5">
+          {property.title}
+        </p>
+        <p className="text-gold font-semibold text-sm">{fmt.format(property.price)}</p>
+        {property.neighborhood && (
+          <p className="text-xs text-white/70 mt-0.5 flex items-center gap-1 truncate">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {property.neighborhood}
+          </p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// ─── Nearby / latest properties section ──────────────────────────────────────
+
+function NearbyPropertiesSection() {
+  const { profile, loading: authLoading } = useAuthContext();
+  const { data: countries = [] } = useCountries();
+
+  const countryId = profile?.country_id ?? undefined;
+  const regionId = profile?.region_id ?? undefined;
+
+  // Prefer region-level results when available, fall back to country, then global
+  const { data: properties = [], isLoading } = useProperties(
+    regionId
+      ? { region_id: regionId, limit: 30 }
+      : countryId
+      ? { country_id: countryId, limit: 30 }
+      : { limit: 30 }
+  );
+
+  // Stable shuffle per data load — reshuffle only when the fetched list changes
+  const displayed = useMemo(() => shuffle(properties).slice(0, 6), [properties]);
+
+  if (authLoading || isLoading) {
+    return (
+      <section className="container py-16">
+        <div className="h-5 w-36 bg-muted rounded animate-pulse mb-2" />
+        <div className="h-9 w-60 bg-muted rounded animate-pulse mb-8" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="aspect-[4/3] rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (displayed.length === 0) return null;
+
+  const regionName = regionId
+    ? undefined // We'd need useRegions to resolve the name; skip for now
+    : undefined;
+  const countryName = countryId
+    ? countries.find((c) => c.id === countryId)?.name
+    : undefined;
+
+  const heading = regionName ?? countryName
+    ? `Properties in ${regionName ?? countryName}`
+    : "Latest Listings";
+  const subheading = countryName
+    ? "Based on your registered location"
+    : "Recently listed across the globe";
+  const browseHref = regionId
+    ? `/listings?region=${regionId}`
+    : countryId
+    ? `/listings?country=${countryId}`
+    : "/listings";
+
+  return (
+    <section className="container py-16">
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-2">
+            {subheading}
+          </span>
+          <h2 className="font-serif text-3xl md:text-4xl text-primary">{heading}</h2>
+        </div>
+        <Button asChild variant="outline" size="sm" className="hidden sm:flex gap-1.5 shrink-0">
+          <Link to={browseHref}>
+            View all <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {displayed.map((p) => (
+          <PropertyPhotoCard key={p.id} property={p} />
+        ))}
+      </div>
+
+      <div className="mt-6 text-center sm:hidden">
+        <Button asChild variant="outline" size="sm">
+          <Link to={browseHref}>
+            View all listings <ArrowRight className="h-3.5 w-3.5 ml-1" />
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 const Home = () => {
   return (
     <>
@@ -126,7 +288,8 @@ const Home = () => {
               </h1>
               <p className="text-lg md:text-xl opacity-90 max-w-xl mb-8 font-light">
                 Legally guaranteed, escrow-protected, with verified local law firms and tax
-                consultants in every country. <span className="text-gold/90">Dalali Wako wa Kweli Duniani Kote.</span>
+                consultants in every country.{" "}
+                <span className="text-gold/90">Dalali Wako wa Kweli Duniani Kote.</span>
               </p>
             </div>
             <div className="-mb-12 md:-mb-16 max-w-5xl">
@@ -136,7 +299,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Country pills + Categories */}
       <section className="container pt-32 md:pt-40">
         <FeaturedLocations />
         <div className="text-center mb-14">
@@ -163,6 +326,9 @@ const Home = () => {
           ))}
         </div>
       </section>
+
+      {/* Properties near the user (or latest global) */}
+      <NearbyPropertiesSection />
 
       {/* How It Works */}
       <section className="container py-24 md:py-32">
