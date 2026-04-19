@@ -53,6 +53,9 @@ export interface PropertyFilters {
   bedrooms_min?: number
   search?: string
   status?: string
+  seller_id?: string
+  ids?: string[]
+  limit?: number
 }
 
 export type CreatePropertyPayload = Omit<Property, 'id' | 'views' | 'created_at' | 'updated_at'>
@@ -87,16 +90,18 @@ export function useProperties(filters: PropertyFilters = {}) {
       if (filters.property_type) query = query.eq('property_type', filters.property_type)
       if (filters.country_id) query = query.eq('country_id', filters.country_id)
       if (filters.region_id) query = query.eq('region_id', filters.region_id)
+      if (filters.seller_id) query = query.eq('seller_id', filters.seller_id)
+      if (filters.ids?.length) query = query.in('id', filters.ids)
       if (filters.price_min != null) query = query.gte('price', filters.price_min)
       if (filters.price_max != null) query = query.lte('price', filters.price_max)
       if (filters.bedrooms_min != null) query = query.gte('bedrooms', filters.bedrooms_min)
-      if (filters.search) {
-        query = query.ilike('title', `%${filters.search}%`)
-      }
+      if (filters.search) query = query.ilike('title', `%${filters.search}%`)
 
       query = query
         .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
+
+      if (filters.limit) query = query.limit(filters.limit)
 
       const { data, error } = await query
 

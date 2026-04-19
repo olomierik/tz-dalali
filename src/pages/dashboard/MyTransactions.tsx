@@ -8,27 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useBuyerTransactions } from '@/hooks/useTransactions'
-
-const STATUS_COLORS: Record<string, string> = {
-  initiated: 'bg-blue-100 text-blue-700 border-blue-200',
-  fee_paid: 'bg-blue-100 text-blue-700 border-blue-200',
-  partner_assigned: 'bg-purple-100 text-purple-700 border-purple-200',
-  due_diligence: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  contract_prep: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  tax_clearance: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  signing: 'bg-orange-100 text-orange-700 border-orange-200',
-  escrow_funded: 'bg-orange-100 text-orange-700 border-orange-200',
-  transferred: 'bg-green-100 text-green-700 border-green-200',
-  completed: 'bg-green-100 text-green-700 border-green-200',
-  cancelled: 'bg-red-100 text-red-700 border-red-200',
-  disputed: 'bg-red-100 text-red-700 border-red-200',
-}
+import { TRANSACTION_STATUS_COLORS, ACTIVE_TX_STATUSES } from '@/lib/statusColors'
 
 const TAB_FILTERS: Record<string, string[]> = {
   all: [],
-  active: ['initiated','fee_paid','partner_assigned','due_diligence','contract_prep','tax_clearance','signing','escrow_funded','transferred'],
+  active: ACTIVE_TX_STATUSES,
   completed: ['completed'],
-  cancelled: ['cancelled','disputed'],
+  cancelled: ['cancelled', 'disputed'],
 }
 
 export default function MyTransactions() {
@@ -92,7 +78,7 @@ export default function MyTransactions() {
                   <TableCell className="max-w-[160px] truncate text-sm">{(tx as any).properties?.title ?? '—'}</TableCell>
                   <TableCell className="capitalize text-sm">{tx.deal_type}</TableCell>
                   <TableCell className="text-sm font-medium">${tx.agreed_price?.toLocaleString()}</TableCell>
-                  <TableCell><Badge className={`text-xs capitalize ${STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge></TableCell>
+                  <TableCell><Badge className={`text-xs capitalize ${TRANSACTION_STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge></TableCell>
                   <TableCell className="text-sm">{tx.current_step}/8</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Users, Building2, FileText, DollarSign, ArrowRight, AlertTriangle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { StatCard } from '@/components/dashboard/StatCard'
 
 interface PlatformStats {
   total_users: number
@@ -35,23 +35,6 @@ function usePlatformStats() {
   })
 }
 
-function StatCard({ icon: Icon, label, value, alert }: { icon: React.ElementType; label: string; value: string | number; alert?: boolean }) {
-  return (
-    <Card className={`shadow-card ${alert ? 'border-amber-200' : ''}`}>
-      <CardContent className="p-5">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${alert ? 'bg-amber-100' : 'bg-gold/10'}`}>
-            <Icon className={`h-5 w-5 ${alert ? 'text-amber-600' : 'text-gold'}`} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className={`font-semibold text-lg ${alert && Number(value) > 0 ? 'text-amber-700' : 'text-primary'}`}>{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = usePlatformStats()

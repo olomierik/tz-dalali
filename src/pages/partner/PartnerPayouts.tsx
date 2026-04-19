@@ -3,47 +3,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-
-interface Payout {
-  id: string
-  amount: number
-  currency: string
-  status: 'pending' | 'processing' | 'paid' | 'failed'
-  reference: string | null
-  created_at: string
-  paid_at: string | null
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  processing: 'bg-blue-100 text-blue-700 border-blue-200',
-  paid: 'bg-green-100 text-green-700 border-green-200',
-  failed: 'bg-red-100 text-red-700 border-red-200',
-}
-
-function usePayouts() {
-  const { user } = useAuthContext()
-  return useQuery({
-    queryKey: ['partner-payouts', user?.id],
-    enabled: !!user,
-    queryFn: async (): Promise<Payout[]> => {
-      if (!user) return []
-      const { data, error } = await (supabase as any)
-        .from('partner_payouts')
-        .select('*')
-        .eq('partner_id', user.id)
-        .order('created_at', { ascending: false })
-      if (error) throw new Error(error.message)
-      return (data ?? []) as Payout[]
-    },
-    staleTime: 5 * 60 * 1000,
-  })
-}
+import { usePartnerPayouts } from '@/hooks/usePartnerData'
+import { PAYOUT_STATUS_COLORS } from '@/lib/statusColors'
 
 export default function PartnerPayouts() {
-  const { data: payouts = [], isLoading } = usePayouts()
+  const { data: payouts = [], isLoading } = usePartnerPayouts()
   const { profile } = useAuthContext()
 
   const totalPaid = payouts.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0)
@@ -119,9 +83,13 @@ export default function PartnerPayouts() {
                 <TableRow key={p.id} className="hover:bg-muted/50">
                   <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString()}</TableCell>
                   <TableCell className="font-bold text-sm">${p.amount.toLocaleString()} {p.currency}</TableCell>
-                  <TableCell><Badge className={`text-xs capitalize ${STATUS_COLORS[p.status] ?? ''}`}>{p.status}</Badge></TableCell>
+                  <TableCell>
+                    <Badge className={`text-xs capitalize ${PAYOUT_STATUS_COLORS[p.status] ?? ''}`}>{p.status}</Badge>
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">{p.reference ?? '—'}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '—'}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : '—'}
+                  </TableCell>
                 </TableRow>
               ))
             )}

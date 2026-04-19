@@ -8,21 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSellerTransactions } from '@/hooks/useTransactions'
-
-const STATUS_COLORS: Record<string, string> = {
-  initiated: 'bg-blue-100 text-blue-700 border-blue-200',
-  partner_assigned: 'bg-purple-100 text-purple-700 border-purple-200',
-  due_diligence: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  contract_prep: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  tax_clearance: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  escrow_funded: 'bg-orange-100 text-orange-700 border-orange-200',
-  title_transfer: 'bg-orange-100 text-orange-700 border-orange-200',
-  completed: 'bg-green-100 text-green-700 border-green-200',
-  cancelled: 'bg-red-100 text-red-700 border-red-200',
-  disputed: 'bg-red-100 text-red-700 border-red-200',
-}
-
-const ACTIVE_STATUSES = ['initiated','partner_assigned','due_diligence','contract_prep','tax_clearance','escrow_funded','title_transfer']
+import { TRANSACTION_STATUS_COLORS, ACTIVE_TX_STATUSES } from '@/lib/statusColors'
 
 export default function SellerTransactions() {
   const { data: transactions = [], isLoading } = useSellerTransactions()
@@ -32,7 +18,7 @@ export default function SellerTransactions() {
   const filtered = transactions.filter(tx => {
     const tabMatch =
       tab === 'all' ||
-      (tab === 'active' && ACTIVE_STATUSES.includes(tx.status)) ||
+      (tab === 'active' && ACTIVE_TX_STATUSES.includes(tx.status)) ||
       (tab === 'completed' && tx.status === 'completed') ||
       (tab === 'cancelled' && ['cancelled','disputed'].includes(tx.status))
     const searchMatch = !search || tx.reference_code?.toLowerCase().includes(search.toLowerCase())
@@ -50,7 +36,7 @@ export default function SellerTransactions() {
         <Tabs value={tab} onValueChange={setTab} className="flex-1">
           <TabsList>
             <TabsTrigger value="all">All ({transactions.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({transactions.filter(t => ACTIVE_STATUSES.includes(t.status)).length})</TabsTrigger>
+            <TabsTrigger value="active">Active ({transactions.filter(t => ACTIVE_TX_STATUSES.includes(t.status)).length})</TabsTrigger>
             <TabsTrigger value="completed">Completed ({transactions.filter(t => t.status === 'completed').length})</TabsTrigger>
             <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
           </TabsList>
@@ -90,7 +76,7 @@ export default function SellerTransactions() {
                     <TableCell className="max-w-[140px] truncate text-sm">{(tx as any).properties?.title ?? '—'}</TableCell>
                     <TableCell className="text-sm font-medium">${tx.agreed_price?.toLocaleString()}</TableCell>
                     <TableCell className="text-sm text-green-700 font-medium">${sellerReceives.toLocaleString(undefined, { maximumFractionDigits: 0 })}</TableCell>
-                    <TableCell><Badge className={`text-xs capitalize ${STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge></TableCell>
+                    <TableCell><Badge className={`text-xs capitalize ${TRANSACTION_STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge></TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Button asChild variant="ghost" size="icon" className="h-8 w-8">

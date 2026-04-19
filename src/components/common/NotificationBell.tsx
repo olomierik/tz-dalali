@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useNotifications, useMarkAllAsRead, useMarkAsRead, type Notification } from '@/hooks/useNotifications'
-import { cn } from '@/lib/utils'
+import { cn, timeAgo } from '@/lib/utils'
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   deal_update: FileText,
@@ -17,15 +17,6 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   marketing: Star,
 }
 
-function timeAgo(date: string) {
-  const diff = Date.now() - new Date(date).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.floor(hrs / 24)}d ago`
-}
 
 function NotificationItem({ n }: { n: Notification }) {
   const Icon = TYPE_ICONS[n.notification_type] ?? Bell

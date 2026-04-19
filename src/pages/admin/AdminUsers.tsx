@@ -6,29 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { useAdminUsers, useAdminUpdateVerification } from '@/hooks/useAdminData'
+import { ROLE_COLORS } from '@/lib/statusColors'
 
-interface UserRow {
-  id: string
-  email: string
-  full_name: string | null
-  role: string
-  id_verification_status: string
-  created_at: string
-  total_deals: number
-}
-
-const ROLE_COLORS: Record<string, string> = {
-  buyer: 'bg-blue-100 text-blue-700 border-blue-200',
-  seller: 'bg-purple-100 text-purple-700 border-purple-200',
-  law_firm: 'bg-green-100 text-green-700 border-green-200',
-  tax_consultant: 'bg-green-100 text-green-700 border-green-200',
-  admin: 'bg-gold/20 text-amber-800 border-gold/30',
-}
-
-const VERIFICATION_ICONS: Record<string, React.ElementType> = {
+const VERIFICATION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   verified: ShieldCheck,
   pending: Shield,
   not_submitted: Shield,
@@ -42,49 +24,28 @@ const VERIFICATION_COLORS: Record<string, string> = {
   rejected: 'text-red-600',
 }
 
-function useAllUsers() {
-  return useQuery({
-    queryKey: ['admin-users'],
-    queryFn: async (): Promise<UserRow[]> => {
-      const { data, error } = await (supabase as any)
-        .from('users')
-        .select('id, email, full_name, role, id_verification_status, created_at, total_deals')
-        .order('created_at', { ascending: false })
-      if (error) throw new Error(error.message)
-      return (data ?? []) as UserRow[]
-    },
-    staleTime: 2 * 60 * 1000,
-  })
-}
-
-function useUpdateVerification() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await (supabase as any).from('users').update({ id_verification_status: status }).eq('id', id)
-      if (error) throw new Error(error.message)
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
-  })
-}
-
 export default function AdminUsers() {
-  const { data: users = [], isLoading } = useAllUsers()
-  const updateVerification = useUpdateVerification()
+  const { data: users = [], isLoading } = useAdminUsers()
+  const updateVerification = useAdminUpdateVerification()
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
 
   const filtered = users.filter(u => {
-    const matchSearch = !search || u.email.toLowerCase().includes(search.toLowerCase()) || (u.full_name ?? '').toLowerCase().includes(search.toLowerCase())
+    const matchSearch = !search
+      || u.email.toLowerCase().includes(search.toLowerCase())
+      || (u.full_name ?? '').toLowerCase().includes(search.toLowerCase())
     const matchRole = roleFilter === 'all' || u.role === roleFilter
     return matchSearch && matchRole
   })
 
   const setVerification = (id: string, status: string) => {
-    updateVerification.mutate({ id, status }, {
-      onSuccess: () => toast.success(`Verification status updated to ${status}`),
-      onError: (e: any) => toast.error(e.message),
-    })
+    updateVerification.mutate(
+      { id, status },
+      {
+        onSuccess: () => toast.success(`Verification status set to ${status}`),
+        onError: (e: any) => toast.error(e.message),
+      }
+    )
   }
 
   return (
@@ -100,9 +61,7 @@ export default function AdminUsers() {
           <Input placeholder="Search by name or email…" className="pl-9 h-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="sm:w-40 h-9">
-            <SelectValue placeholder="All roles" />
-          </SelectTrigger>
+          <SelectTrigger className="sm:w-40 h-9"><SelectValue placeholder="All roles" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="buyer">Buyers</SelectItem>
@@ -123,16 +82,22 @@ export default function AdminUsers() {
               <TableHead>Verification</TableHead>
               <TableHead>Deals</TableHead>
               <TableHead>Joined</TableHead>
-              <TableHead className="w-32">ID Actions</TableHead>
+              <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <TableRow key={i}>{Array.from({ length: 6 }).map((_, j) => <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>)}</TableRow>
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                  ))}
+                </TableRow>
               ))
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No users found</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No users found</TableCell>
+              </TableRow>
             ) : (
               filtered.map(u => {
                 const VerIcon = VERIFICATION_ICONS[u.id_verification_status] ?? Shield
@@ -160,12 +125,14 @@ export default function AdminUsers() {
                     <TableCell>
                       {u.id_verification_status === 'pending' && (
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" className="h-7 text-xs text-green-600 hover:text-green-700" onClick={() => setVerification(u.id, 'verified')} disabled={updateVerification.isPending}>
-                            Approve
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs text-red-600 hover:text-red-700" onClick={() => setVerification(u.id, 'rejected')} disabled={updateVerification.isPending}>
-                            Reject
-                          </Button>
+                          <Button
+                            variant="ghost" size="sm" className="h-7 text-xs text-green-600 hover:text-green-700"
+                            onClick={() => setVerification(u.id, 'verified')} disabled={updateVerification.isPending}
+                          >Approve</Button>
+                          <Button
+                            variant="ghost" size="sm" className="h-7 text-xs text-red-600 hover:text-red-700"
+                            onClick={() => setVerification(u.id, 'rejected')} disabled={updateVerification.isPending}
+                          >Reject</Button>
                         </div>
                       )}
                       {u.id_verification_status === 'not_submitted' && (
