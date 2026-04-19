@@ -96,10 +96,10 @@ function FilterPanel({
       {regions.length > 0 && (
         <div>
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 block">Region</Label>
-          <Select value={filters.region_id ?? ''} onValueChange={v => onChange({ region_id: v || undefined, district_id: undefined })}>
+          <Select value={filters.region_id ?? '__any__'} onValueChange={v => onChange({ region_id: v === '__any__' ? undefined : v })}>
             <SelectTrigger className="h-9"><SelectValue placeholder="Any region" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any region</SelectItem>
+              <SelectItem value="__any__">Any region</SelectItem>
               {regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
             </SelectContent>
           </Select>
