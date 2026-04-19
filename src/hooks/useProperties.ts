@@ -112,7 +112,10 @@ export function useProperties(filters: PropertyFilters = {}) {
       if (filters.price_min != null) query = query.gte('price', filters.price_min)
       if (filters.price_max != null) query = query.lte('price', filters.price_max)
       if (filters.bedrooms_min != null) query = query.gte('bedrooms', filters.bedrooms_min)
-      if (filters.search) query = query.ilike('title', `%${filters.search}%`)
+      if (filters.search) {
+        const term = `%${filters.search}%`
+        query = query.or(`title.ilike.${term},neighborhood.ilike.${term}`)
+      }
 
       query = query
         .order('is_featured', { ascending: false })
