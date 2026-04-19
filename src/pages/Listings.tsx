@@ -84,10 +84,10 @@ function FilterPanel({
 
       <div>
         <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 block">Country</Label>
-        <Select value={filters.country_id ?? ''} onValueChange={v => onChange({ country_id: v || undefined, region_id: undefined, district_id: undefined })}>
+        <Select value={filters.country_id ?? '__any__'} onValueChange={v => onChange({ country_id: v === '__any__' ? undefined : v, region_id: undefined })}>
           <SelectTrigger className="h-9"><SelectValue placeholder="Any country" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Any country</SelectItem>
+            <SelectItem value="__any__">Any country</SelectItem>
             {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag_emoji} {c.name}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -96,10 +96,10 @@ function FilterPanel({
       {regions.length > 0 && (
         <div>
           <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 block">Region</Label>
-          <Select value={filters.region_id ?? ''} onValueChange={v => onChange({ region_id: v || undefined, district_id: undefined })}>
+          <Select value={filters.region_id ?? '__any__'} onValueChange={v => onChange({ region_id: v === '__any__' ? undefined : v })}>
             <SelectTrigger className="h-9"><SelectValue placeholder="Any region" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any region</SelectItem>
+              <SelectItem value="__any__">Any region</SelectItem>
               {regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
             </SelectContent>
           </Select>
