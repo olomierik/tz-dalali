@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -33,7 +33,7 @@ const signUpSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
-  role: z.enum(['buyer', 'seller'], { required_error: 'Please select your role' }),
+  role: z.enum(['buyer', 'seller', 'law_firm', 'tax_consultant'], { required_error: 'Please select your role' }),
   acceptTerms: z.literal(true, {
     errorMap: () => ({ message: 'You must accept the terms and conditions' }),
   }),
@@ -57,11 +57,11 @@ function useRedirectAfterAuth() {
   return (role: string | null) => {
     switch (role) {
       case 'seller':
-        navigate('/seller/dashboard')
+        navigate('/seller')
         break
       case 'law_firm':
       case 'tax_consultant':
-        navigate('/partner/dashboard')
+        navigate('/partner')
         break
       case 'admin':
       case 'superadmin':
@@ -291,7 +291,7 @@ function SignInTab({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
 // Create Account Tab
 // ---------------------------------------------------------------------------
 
-function CreateAccountTab({ onSuccess }: { onSuccess: () => void }) {
+function CreateAccountTab({ onSuccess, defaultRole }: { onSuccess: () => void; defaultRole?: string }) {
   const { signUp } = useAuthContext()
   const { toast } = useToast()
 
@@ -304,8 +304,12 @@ function CreateAccountTab({ onSuccess }: { onSuccess: () => void }) {
     reset,
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { role: 'buyer', acceptTerms: undefined },
+    defaultValues: { role: (defaultRole as any) ?? 'buyer', acceptTerms: undefined },
   })
+
+  useEffect(() => {
+    if (defaultRole) setValue('role', defaultRole as any)
+  }, [defaultRole, setValue])
 
   const acceptTerms = watch('acceptTerms')
   const selectedRole = watch('role')
@@ -403,7 +407,9 @@ function CreateAccountTab({ onSuccess }: { onSuccess: () => void }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="buyer">Buyer — I'm looking to purchase property</SelectItem>
-            <SelectItem value="seller">Property Owner / Seller — I want to list property</SelectItem>
+            <SelectItem value="seller">Seller / Property Owner — I want to list property</SelectItem>
+            <SelectItem value="law_firm">Law Firm Partner — I provide legal services</SelectItem>
+            <SelectItem value="tax_consultant">Tax Consultant Partner — I provide tax services</SelectItem>
           </SelectContent>
         </Select>
         {errors.role && (
@@ -611,7 +617,11 @@ function RegistrationSuccessBanner({ onDismiss }: { onDismiss: () => void }) {
 // ---------------------------------------------------------------------------
 
 const Auth = () => {
-  const [activeTab, setActiveTab] = useState<'signin' | 'register' | 'reset'>('signin')
+  const [searchParams] = useSearchParams()
+  const initialMode = searchParams.get('mode') === 'signup' ? 'register' : 'signin'
+  const initialRole = searchParams.get('role') ?? undefined
+
+  const [activeTab, setActiveTab] = useState<'signin' | 'register' | 'reset'>(initialMode)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
 
   const handleRegistrationSuccess = () => {
@@ -693,7 +703,7 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="register" className="mt-0">
-                <CreateAccountTab onSuccess={handleRegistrationSuccess} />
+                <CreateAccountTab onSuccess={handleRegistrationSuccess} defaultRole={initialRole} />
               </TabsContent>
 
               <TabsContent value="reset" className="mt-0">

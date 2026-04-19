@@ -6,14 +6,13 @@ import { supabase } from '@/integrations/supabase/client'
 export interface Country {
   id: string
   name: string
-  iso2: string
-  iso3: string | null
+  iso_code: string
+  iso3_code: string | null
   flag_emoji: string | null
   currency_code: string | null
   currency_symbol: string | null
   phone_code: string | null
   is_active: boolean
-  region_count?: number
 }
 
 export interface Region {
@@ -38,9 +37,24 @@ export const locationKeys = {
   districts: (regionId: string) => ['districts', regionId] as const,
 }
 
+// East African countries shown first, in priority order
+const EAST_AFRICA_ISO = ['TZ','KE','UG','RW','BI','ET','SS','SO','ER','DJ','MZ','MW','ZM','ZW','CD','MG','KM','SC','MU']
+
+function sortCountries(countries: Country[]): Country[] {
+  return [...countries].sort((a, b) => {
+    const ai = EAST_AFRICA_ISO.indexOf(a.iso_code)
+    const bi = EAST_AFRICA_ISO.indexOf(b.iso_code)
+    if (ai !== -1 && bi !== -1) return ai - bi
+    if (ai !== -1) return -1
+    if (bi !== -1) return 1
+    return a.name.localeCompare(b.name)
+  })
+}
+
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-const COUNTRIES_CACHE_KEY = 'tzdalali:countries:cache'
-const COUNTRIES_CACHE_TS_KEY = 'tzdalali:countries:timestamp'
+const CACHE_VER = 'v3'                                            // bump to bust stale caches
+const COUNTRIES_CACHE_KEY = `tzdalali:countries:cache:${CACHE_VER}`
+const COUNTRIES_CACHE_TS_KEY = `tzdalali:countries:ts:${CACHE_VER}`
 
 // ─── localStorage cache helpers ──────────────────────────────────────────────
 
@@ -75,18 +89,18 @@ export function useCountries() {
     queryFn: async (): Promise<Country[]> => {
       // Serve from localStorage cache when fresh
       const cached = loadCachedCountries()
-      if (cached) return cached
+      if (cached) return sortCountries(cached)
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from('countries')
-        .select('id, name, iso2, iso3, flag_emoji, currency_code, currency_symbol, phone_code, is_active')
+        .select('id, name, iso_code, iso3_code, flag_emoji, currency_code, currency_symbol, phone_code, is_active')
         .eq('is_active', true)
         .order('name', { ascending: true })
 
       if (error) throw new Error(error.message)
 
-      const countries = (data ?? []) as Country[]
+      const countries = sortCountries((data ?? []) as Country[])
       saveCachedCountries(countries)
       return countries
     },
