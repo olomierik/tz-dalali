@@ -52,8 +52,9 @@ function sortCountries(countries: Country[]): Country[] {
 }
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-const COUNTRIES_CACHE_KEY = 'tzdalali:countries:cache'
-const COUNTRIES_CACHE_TS_KEY = 'tzdalali:countries:timestamp'
+const CACHE_VER = 'v3'                                            // bump to bust stale caches
+const COUNTRIES_CACHE_KEY = `tzdalali:countries:cache:${CACHE_VER}`
+const COUNTRIES_CACHE_TS_KEY = `tzdalali:countries:ts:${CACHE_VER}`
 
 // ─── localStorage cache helpers ──────────────────────────────────────────────
 

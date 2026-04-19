@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,9 +28,9 @@ const listingSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   property_type: z.string().min(1, 'Select a property type'),
   deal_type: z.enum(['sale', 'rent', 'lease']),
-  country_id: z.string().optional(),
-  region_id: z.string().optional(),
-  district_id: z.string().optional(),
+  country_id: z.string().optional().transform(v => v || undefined),
+  region_id: z.string().optional().transform(v => v || undefined),
+  district_id: z.string().optional().transform(v => v || undefined),
   neighborhood: z.string().optional(),
   price: z.number({ invalid_type_error: 'Enter a valid price' }).min(1, 'Price must be greater than 0'),
   price_currency: z.string().min(1),
@@ -66,7 +66,7 @@ export default function NewListing() {
   const isEdit = Boolean(editId)
 
   const { profile } = useAuthContext()
-  const { data: countries = [] } = useCountries()
+  const { data: countries = [], isLoading: countriesLoading } = useCountries()
   const createProperty = useCreateProperty()
   const updateProperty = useUpdateProperty()
   const { uploadMultiple, removeImage, uploading, error: uploadError } = usePropertyImageUpload()
@@ -86,8 +86,12 @@ export default function NewListing() {
   const countryId = watch('country_id')
   const regionId = watch('region_id')
 
-  const { data: regions = [] } = useRegions(countryId)
-  const { data: districts = [] } = useDistricts(regionId)
+  const { data: regions = [], isLoading: regionsLoading } = useRegions(countryId)
+  const { data: districts = [], isLoading: districtsLoading } = useDistricts(regionId)
+
+  // Reset cascade when parent selection clears
+  useEffect(() => { if (!countryId) { setValue('region_id', ''); setValue('district_id', '') } }, [countryId, setValue])
+  useEffect(() => { if (!regionId) { setValue('district_id', '') } }, [regionId, setValue])
 
   // ─── Image handling ──────────────────────────────────────────────────────
 
@@ -392,67 +396,84 @@ export default function NewListing() {
                 <CardDescription>Where is the property located? The more specific, the better.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+
                 {/* Country */}
                 <div className="space-y-1.5">
                   <Label>Country *</Label>
-                  <Select onValueChange={v => {
-                    setValue('country_id', v)
-                    setValue('region_id', undefined)
-                    setValue('district_id', undefined)
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
-                    <SelectContent className="max-h-64 overflow-y-auto">
+                  <Select
+                    value={countryId ?? ''}
+                    onValueChange={v => {
+                      setValue('country_id', v || '')
+                      setValue('region_id', '')
+                      setValue('district_id', '')
+                    }}
+                    disabled={countriesLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={countriesLoading ? 'Loading countries…' : 'Select country'} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72 overflow-y-auto">
+                      {countries.length === 0 && !countriesLoading && (
+                        <div className="px-3 py-2 text-xs text-muted-foreground">No countries found — check DB setup</div>
+                      )}
                       {countries.map(c => (
                         <SelectItem key={c.id} value={c.id}>
-                          {c.flag_emoji ? <span className="mr-2">{c.flag_emoji}</span> : null}{c.name}
+                          {c.flag_emoji ? `${c.flag_emoji} ` : ''}{c.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Region — shown when country selected */}
+                {/* Region */}
                 {countryId && (
                   <div className="space-y-1.5">
                     <Label>Region / State / Province</Label>
-                    {regions.length > 0 ? (
-                      <Select onValueChange={v => {
-                        setValue('region_id', v)
-                        setValue('district_id', undefined)
-                      }}>
+                    {regionsLoading ? (
+                      <div className="h-10 rounded-md border border-border bg-muted animate-pulse" />
+                    ) : regions.length > 0 ? (
+                      <Select
+                        value={regionId ?? ''}
+                        onValueChange={v => { setValue('region_id', v || ''); setValue('district_id', '') }}
+                      >
                         <SelectTrigger><SelectValue placeholder="Select region" /></SelectTrigger>
-                        <SelectContent className="max-h-64 overflow-y-auto">
+                        <SelectContent className="max-h-72 overflow-y-auto">
                           {regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input {...register('region_id')} placeholder="Type region name" />
+                      <Input {...register('region_id')} placeholder="Type region / state name" />
                     )}
                   </div>
                 )}
 
-                {/* District — shown when region selected */}
+                {/* District */}
                 {regionId && (
                   <div className="space-y-1.5">
-                    <Label>District / City / Area</Label>
-                    {districts.length > 0 ? (
-                      <Select onValueChange={v => setValue('district_id', v)}>
+                    <Label>District / City</Label>
+                    {districtsLoading ? (
+                      <div className="h-10 rounded-md border border-border bg-muted animate-pulse" />
+                    ) : districts.length > 0 ? (
+                      <Select
+                        value={watch('district_id') ?? ''}
+                        onValueChange={v => setValue('district_id', v || '')}
+                      >
                         <SelectTrigger><SelectValue placeholder="Select district" /></SelectTrigger>
-                        <SelectContent className="max-h-64 overflow-y-auto">
+                        <SelectContent className="max-h-72 overflow-y-auto">
                           {districts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input {...register('district_id')} placeholder="Type district name" />
+                      <Input {...register('district_id')} placeholder="Type district / city name" />
                     )}
                   </div>
                 )}
 
-                {/* Neighborhood — always shown */}
+                {/* Neighborhood */}
                 <div className="space-y-1.5">
                   <Label>Street / Neighborhood</Label>
                   <Input {...register('neighborhood')} placeholder="e.g. Oyster Bay, Masaki, Kinondoni" />
-                  <p className="text-xs text-muted-foreground">Visible to buyers — be as specific as you're comfortable with.</p>
+                  <p className="text-xs text-muted-foreground">Be as specific as you're comfortable with.</p>
                 </div>
               </CardContent>
             </>
