@@ -159,7 +159,7 @@ export function useTransaction(id: string | undefined) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from('transactions')
-        .select('*, steps:transaction_steps(*), documents:transaction_documents(*)')
+        .select('*, steps:transaction_steps(*), documents:documents(*)')
         .eq('id', id)
         .maybeSingle()
 

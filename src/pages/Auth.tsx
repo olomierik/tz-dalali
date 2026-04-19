@@ -94,7 +94,6 @@ function SignInTab({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const { signIn } = useAuthContext()
   const { toast } = useToast()
   const redirectAfterAuth = useRedirectAfterAuth()
-  const { role } = useAuthContext()
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const {
@@ -111,7 +110,7 @@ function SignInTab({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const rememberMe = watch('rememberMe')
 
   const onSubmit = async (values: SignInFormValues) => {
-    const { error } = await signIn(values.email, values.password)
+    const { error, role: signedInRole } = await signIn(values.email, values.password)
 
     if (error) {
       toast({
@@ -127,7 +126,7 @@ function SignInTab({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
       description: 'You have successfully signed in.',
     })
 
-    redirectAfterAuth(role)
+    redirectAfterAuth(signedInRole)
   }
 
   const handleGoogleSignIn = async () => {
