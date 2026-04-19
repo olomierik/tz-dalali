@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import heroVilla from "@/assets/hero-villa.jpg";
+import { useCountries, type Country } from "@/hooks/useCountries";
 import {
   Building2,
   Home as HomeIcon,
@@ -61,6 +62,46 @@ const howItWorks = [
   },
 ];
 
+const HIGHLIGHT_ISO = ["TZ", "KE", "UG", "RW", "ET", "CD", "MZ", "MG"];
+
+function FeaturedLocations() {
+  const navigate = useNavigate();
+  const { data: countries = [] } = useCountries();
+
+  const featured = HIGHLIGHT_ISO
+    .map((iso) => countries.find((c) => c.iso_code === iso))
+    .filter((c): c is Country => !!c);
+
+  if (featured.length === 0) return null;
+
+  return (
+    <div className="mb-16">
+      <p className="text-xs uppercase tracking-[0.3em] text-gold mb-4 text-center">Browse by Country</p>
+      <div className="flex flex-wrap justify-center gap-2.5">
+        {featured.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => navigate(`/listings?country=${c.id}`)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card hover:border-gold hover:shadow-md transition-all text-sm font-medium text-foreground"
+          >
+            {c.flag_emoji && <span className="text-base leading-none">{c.flag_emoji}</span>}
+            {c.name}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => navigate("/listings")}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-dashed border-border bg-transparent hover:border-gold text-sm text-muted-foreground hover:text-foreground transition-all"
+        >
+          <Globe2 className="h-3.5 w-3.5" />
+          All countries
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const Home = () => {
   return (
     <>
@@ -97,6 +138,7 @@ const Home = () => {
 
       {/* Categories */}
       <section className="container pt-32 md:pt-40">
+        <FeaturedLocations />
         <div className="text-center mb-14">
           <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-3">Browse</span>
           <h2 className="font-serif text-4xl md:text-5xl text-primary mb-4">Find your property</h2>
