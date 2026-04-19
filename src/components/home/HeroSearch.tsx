@@ -92,8 +92,7 @@ export const HeroSearch = () => {
           <Select
             value={regionId || ANY_LOCATION}
             onValueChange={(value) => handleRegionChange(value === ANY_LOCATION ? "" : value)}
-          disabled={!countryId || regions.length === 0}
-        >
+          >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any region" />
           </SelectTrigger>
@@ -109,8 +108,7 @@ export const HeroSearch = () => {
           <Select
             value={districtId || ANY_LOCATION}
             onValueChange={(value) => setDistrictId(value === ANY_LOCATION ? "" : value)}
-          disabled={!regionId || districts.length === 0}
-        >
+          >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any district" />
           </SelectTrigger>
