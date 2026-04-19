@@ -76,35 +76,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile])
 
   useEffect(() => {
-    // Resolve the initial session before subscribing to changes so we only
-    // set loading=false once and avoid a double-render flash.
     let mounted = true
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const syncAuthState = (currentUser: User | null) => {
       if (!mounted) return
-      const currentUser = session?.user ?? null
+
       setUser(currentUser)
-      if (currentUser) {
-        const data = await fetchProfile(currentUser.id)
-        if (mounted) setProfile(data)
+      setLoading(false)
+
+      if (!currentUser) {
+        setProfile(null)
+        return
       }
-      if (mounted) setLoading(false)
+
+      void fetchProfile(currentUser.id).then((data) => {
+        if (mounted) setProfile(data)
+      })
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncAuthState(session?.user ?? null)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-
-      if (currentUser) {
-        const data = await fetchProfile(currentUser.id)
-        if (mounted) setProfile(data)
-      } else {
-        setProfile(null)
-      }
-
-      // Ensure loading is cleared on any auth event in case getSession hasn't resolved yet.
-      if (mounted) setLoading(false)
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      syncAuthState(session?.user ?? null)
     })
 
     return () => {
@@ -113,12 +108,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchProfile])
 
-  const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
+  const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null; role: string | null }> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
 
       if (error) {
-        return { error: mapSupabaseError(error.message) }
+        return { error: mapSupabaseError(error.message), role: null }
       }
 
       if (data.user) {
@@ -141,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: null, role: null }
     } catch (err) {
       console.error('[AuthContext] signIn unexpected error:', err)
-      return { error: 'An unexpected error occurred. Please try again.' }
+      return { error: 'An unexpected error occurred. Please try again.', role: null }
     }
   }, [fetchProfile])
 
