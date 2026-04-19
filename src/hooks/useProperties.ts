@@ -39,6 +39,17 @@ export interface Property {
   seller_id: string
   views: number
   is_featured: boolean
+  is_verified?: boolean | null
+  full_address?: string | null
+  amenities?: string[] | null
+  features?: string[] | null
+  year_built?: number | null
+  floors?: number | null
+  parking_spaces?: number | null
+  title_deed_type?: string | null
+  legal_status?: string | null
+  legal_notes?: string | null
+  price_period?: string | null
   created_at: string
   updated_at: string
 }

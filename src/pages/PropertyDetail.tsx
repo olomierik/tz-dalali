@@ -80,11 +80,11 @@ function InitiateDialog({ open, onClose, property }: { open: boolean; onClose: (
     try {
       const tx = await createTx({
         property_id: property.id,
-        deal_type: property.deal_type,
+        buyer_id: '',
+        seller_id: property.seller_id,
         agreed_price: property.price,
-        agreed_currency: property.price_currency,
-        source_of_funds: sourceOfFunds,
-        intended_use: intendedUse,
+        currency: property.price_currency,
+        notes: `Source of funds: ${sourceOfFunds}\nIntended use: ${intendedUse}`,
       })
       toast({ title: 'Transaction initiated!', description: `Reference: ${tx.reference_code}` })
       onClose()
