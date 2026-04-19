@@ -11,10 +11,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { PropertyGrid } from '@/components/properties/PropertyGrid'
-import { useProperties, useSavedProperties, useSaveProperty, type PropertyFilters } from '@/hooks/useProperties'
+import { useProperties, useSavedProperties, useSaveProperty, type PropertyFilters, type Property } from '@/hooks/useProperties'
 import { useCountries, useRegions, useDistricts } from '@/hooks/useCountries'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 const PROPERTY_TYPES = [
   { value: 'apartment', label: 'Apartment' },
@@ -29,6 +31,53 @@ const PROPERTY_TYPES = [
 ]
 
 type Filters = PropertyFilters & { property_types?: string[] }
+
+// ─── Slideshow header ─────────────────────────────────────────────────────────
+
+function SlideshowHeader({
+  properties,
+  title,
+  tagline,
+}: {
+  properties: Property[]
+  title: string
+  tagline: string
+}) {
+  const images = properties
+    .map(p => p.featured_image)
+    .filter((img): img is string => !!img)
+    .slice(0, 8)
+
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    if (images.length <= 1) return
+    const id = setInterval(() => setIdx(i => (i + 1) % images.length), 4000)
+    return () => clearInterval(id)
+  }, [images.length])
+
+  return (
+    <div className="relative overflow-hidden bg-primary text-primary-foreground py-12 md:py-16 min-h-[160px]">
+      {images.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          className={cn(
+            'absolute inset-0 w-full h-full object-cover transition-opacity duration-1000',
+            i === idx ? 'opacity-30' : 'opacity-0'
+          )}
+          alt=""
+          loading="lazy"
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/50 to-primary/85 pointer-events-none" />
+      <div className="relative container">
+        <h1 className="font-serif text-3xl md:text-4xl mb-2">{title}</h1>
+        <p className="opacity-80 text-sm">{tagline}</p>
+      </div>
+    </div>
+  )
+}
 
 // ─── Filter panel (sidebar + mobile sheet) ───────────────────────────────────
 
@@ -239,8 +288,9 @@ function LocationBar({
 const PAGE_SIZE = 12
 
 export default function Listings() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const { user } = useAuthContext()
+  const { t } = useLanguage()
   const { toast } = useToast()
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [filterOpen, setFilterOpen] = useState(false)
@@ -248,19 +298,23 @@ export default function Listings() {
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const [page, setPage] = useState(+(searchParams.get('page') ?? 1))
 
+  const urlPropertyType = searchParams.get('property_type') || undefined
+
   const [filters, setFilters] = useState<Filters>({
     deal_type: (searchParams.get('type') as PropertyFilters['deal_type']) || undefined,
+    property_type: urlPropertyType,
     country_id: searchParams.get('country') || undefined,
     region_id: searchParams.get('region') || undefined,
     district_id: searchParams.get('district') || undefined,
     price_min: searchParams.get('minPrice') ? +searchParams.get('minPrice')! : undefined,
     price_max: searchParams.get('maxPrice') ? +searchParams.get('maxPrice')! : undefined,
     bedrooms_min: searchParams.get('beds') ? +searchParams.get('beds')! : undefined,
+    property_types: urlPropertyType ? [urlPropertyType] : undefined,
   })
 
   useEffect(() => {
-    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 350)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => { setDebouncedSearch(search); setPage(1) }, 350)
+    return () => clearTimeout(timer)
   }, [search])
 
   const activeFilters: Filters = { ...filters, search: debouncedSearch || undefined }
@@ -299,20 +353,30 @@ export default function Listings() {
     ...(filters.property_types ?? []),
   ].filter(Boolean).length
 
+  const pageTitle = filters.property_type === 'commercial'
+    ? t('listings.commercial')
+    : filters.deal_type === 'sale'
+    ? t('listings.sale')
+    : filters.deal_type === 'rent'
+    ? t('listings.rent')
+    : filters.deal_type === 'lease'
+    ? t('listings.lease')
+    : t('listings.all')
+
+  const resultText = isLoading
+    ? t('listings.loading')
+    : properties.length === 1
+    ? t('listings.found_one')
+    : t('listings.found', { n: properties.length })
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-primary text-primary-foreground py-8">
-        <div className="container">
-          <h1 className="font-serif text-3xl md:text-4xl mb-2">
-            {filters.deal_type === 'sale' ? 'Properties For Sale'
-              : filters.deal_type === 'rent' ? 'Properties For Rent'
-              : filters.deal_type === 'lease' ? 'Properties for Lease'
-              : 'All Properties'}
-          </h1>
-          <p className="opacity-80 text-sm">Globally listed. Legally guaranteed. Escrow-protected.</p>
-        </div>
-      </div>
+      {/* Slideshow header */}
+      <SlideshowHeader
+        properties={properties}
+        title={pageTitle}
+        tagline={t('listings.tagline')}
+      />
 
       <div className="container py-6">
         {/* Search + controls */}
@@ -320,7 +384,7 @@ export default function Listings() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by title, neighbourhood, type…"
+              placeholder={t('listings.search_ph')}
               className="pl-9 h-10"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -328,7 +392,7 @@ export default function Listings() {
           </div>
           <Button variant="outline" size="sm" className="shrink-0 gap-2 h-10" onClick={() => setFilterOpen(true)}>
             <SlidersHorizontal className="h-4 w-4" />
-            Filters
+            {t('listings.filters')}
             {activeCount > 0 && (
               <Badge className="bg-gold text-white h-4 w-4 p-0 text-[10px] flex items-center justify-center rounded-full">{activeCount}</Badge>
             )}
@@ -353,17 +417,15 @@ export default function Listings() {
           {/* Results */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-muted-foreground">
-                {isLoading ? 'Loading…' : `${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'} found`}
-              </p>
+              <p className="text-sm text-muted-foreground">{resultText}</p>
             </div>
 
             {!isLoading && paged.length === 0 ? (
               <div className="text-center py-20">
                 <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="font-serif text-xl text-primary mb-2">No properties found</h3>
-                <p className="text-muted-foreground text-sm mb-6">Try adjusting your filters or search term.</p>
-                <Button variant="outline" onClick={handleClear}>Clear all filters</Button>
+                <h3 className="font-serif text-xl text-primary mb-2">{t('listings.no_results')}</h3>
+                <p className="text-muted-foreground text-sm mb-6">{t('listings.no_results_sub')}</p>
+                <Button variant="outline" onClick={handleClear}>{t('listings.clear_filters')}</Button>
               </div>
             ) : (
               <PropertyGrid properties={paged} loading={isLoading} view={view} savedIds={savedIds} onSaveToggle={handleSave} />
@@ -371,11 +433,11 @@ export default function Listings() {
 
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-8 flex-wrap">
-                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>{t('listings.previous')}</Button>
                 {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(p => (
                   <Button key={p} size="sm" variant={p === page ? 'default' : 'outline'} className="w-9 p-0" onClick={() => setPage(p)}>{p}</Button>
                 ))}
-                <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>{t('listings.next')}</Button>
               </div>
             )}
           </div>
