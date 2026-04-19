@@ -4,52 +4,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatCard } from '@/components/dashboard/StatCard'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useProperties } from '@/hooks/useProperties'
 import { useSellerTransactions } from '@/hooks/useTransactions'
-
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-100 text-green-700',
-  draft: 'bg-muted text-muted-foreground',
-  under_offer: 'bg-yellow-100 text-yellow-700',
-  sold: 'bg-blue-100 text-blue-700',
-  rented: 'bg-blue-100 text-blue-700',
-  inactive: 'bg-red-100 text-red-700',
-}
-
-const TX_STATUS_COLORS: Record<string, string> = {
-  initiated: 'bg-blue-100 text-blue-700',
-  partner_assigned: 'bg-purple-100 text-purple-700',
-  due_diligence: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
-}
-
-function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
-  return (
-    <Card className="shadow-card">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-            <Icon className="h-5 w-5 text-gold" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="font-semibold text-lg text-primary">{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+import { TRANSACTION_STATUS_COLORS, PROPERTY_STATUS_COLORS, ACTIVE_TX_STATUSES } from '@/lib/statusColors'
 
 export default function SellerDashboard() {
   const { profile } = useAuthContext()
   const { data: transactions = [], isLoading: txLoading } = useSellerTransactions()
-  const { data: listings = [], isLoading: listingsLoading } = useProperties({ status: 'active' })
+  const { data: myListings = [], isLoading: listingsLoading } = useProperties({
+    seller_id: profile?.id,
+  })
 
-  const myListings = listings.filter(p => p.seller_id === profile?.id)
-  const activeTransactions = transactions.filter(t => !['completed', 'cancelled'].includes(t.status))
+  const activeTransactions = transactions.filter(t => ACTIVE_TX_STATUSES.includes(t.status))
   const totalEarnings = profile?.total_spent ?? 0
 
   return (
@@ -65,13 +33,12 @@ export default function SellerDashboard() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard icon={Building2} label="Active Listings" value={myListings.length} />
+        <StatCard icon={Building2} label="Active Listings" value={myListings.filter(p => p.status === 'active').length} />
         <StatCard icon={FileText} label="Active Deals" value={activeTransactions.length} />
         <StatCard icon={DollarSign} label="Total Earned" value={`$${totalEarnings.toLocaleString()}`} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Recent listings */}
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="font-serif text-xl">My Listings</CardTitle>
@@ -101,7 +68,7 @@ export default function SellerDashboard() {
                       <p className="text-xs text-muted-foreground">${p.price.toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge className={`text-xs capitalize ${STATUS_COLORS[p.status] ?? 'bg-muted'}`}>{p.status}</Badge>
+                      <Badge className={`text-xs capitalize ${PROPERTY_STATUS_COLORS[p.status] ?? ''}`}>{p.status}</Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-0.5"><Eye className="h-3 w-3" />{p.views}</span>
                     </div>
                   </Link>
@@ -111,7 +78,6 @@ export default function SellerDashboard() {
           </CardContent>
         </Card>
 
-        {/* Active deals */}
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle className="font-serif text-xl">Active Deals</CardTitle>
@@ -133,7 +99,7 @@ export default function SellerDashboard() {
                       <p className="text-xs font-mono text-muted-foreground">{tx.reference_code}</p>
                       <p className="text-sm font-medium">${tx.agreed_price?.toLocaleString()}</p>
                     </div>
-                    <Badge className={`text-xs ${TX_STATUS_COLORS[tx.status] ?? 'bg-muted text-muted-foreground'}`}>{tx.status.replace(/_/g, ' ')}</Badge>
+                    <Badge className={`text-xs ${TRANSACTION_STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge>
                   </Link>
                 ))}
               </div>

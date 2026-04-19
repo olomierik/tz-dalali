@@ -10,19 +10,8 @@ import { Label } from '@/components/ui/label'
 import { TransactionStepper } from '@/components/transaction/TransactionStepper'
 import { useTransaction, useTransactionSteps, useUpdateTransactionStep } from '@/hooks/useTransactions'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { TRANSACTION_STATUS_COLORS } from '@/lib/statusColors'
 import { toast } from 'sonner'
-
-const STATUS_COLORS: Record<string, string> = {
-  initiated: 'bg-blue-100 text-blue-700 border-blue-200',
-  partner_assigned: 'bg-purple-100 text-purple-700 border-purple-200',
-  due_diligence: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  contract_prep: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  tax_clearance: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  escrow_funded: 'bg-orange-100 text-orange-700 border-orange-200',
-  title_transfer: 'bg-orange-100 text-orange-700 border-orange-200',
-  completed: 'bg-green-100 text-green-700 border-green-200',
-  cancelled: 'bg-red-100 text-red-700 border-red-200',
-}
 
 export default function PartnerTransactionDetail() {
   const { id } = useParams<{ id: string }>()
@@ -87,7 +76,7 @@ export default function PartnerTransactionDetail() {
           <h1 className="font-serif text-2xl text-primary">Transaction {tx.reference_code}</h1>
           <p className="text-sm text-muted-foreground">{(tx as any).properties?.title ?? 'Property'}</p>
         </div>
-        <Badge className={`ml-auto text-xs capitalize ${STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge>
+        <Badge className={`ml-auto text-xs capitalize ${TRANSACTION_STATUS_COLORS[tx.status] ?? ''}`}>{tx.status.replace(/_/g, ' ')}</Badge>
       </div>
 
       {/* Stepper */}

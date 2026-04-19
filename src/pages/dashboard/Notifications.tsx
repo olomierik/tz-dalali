@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '@/hooks/useNotifications'
-import { cn } from '@/lib/utils'
+import { cn, timeAgo } from '@/lib/utils'
 
-const TYPE_ICONS: Record<string, React.ElementType> = {
+const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   deal_update: FileText,
   listing_approved: CheckCircle,
   payment_confirmed: CreditCard,
@@ -16,17 +16,6 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   marketing: Star,
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString()
-}
 
 export default function Notifications() {
   const { data: notifications = [], isLoading } = useNotifications()

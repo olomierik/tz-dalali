@@ -113,7 +113,7 @@ export function useBuyerTransactions() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from('transactions')
-        .select('*')
+        .select('*, properties(id, title, featured_image, deal_type)')
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false })
 
@@ -138,7 +138,7 @@ export function useSellerTransactions() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from('transactions')
-        .select('*')
+        .select('*, properties(id, title, featured_image, deal_type)')
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false })
 

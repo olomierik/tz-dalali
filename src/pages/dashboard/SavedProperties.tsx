@@ -6,10 +6,11 @@ import { PropertyGrid } from '@/components/properties/PropertyGrid'
 
 export default function SavedProperties() {
   const { data: savedIds = [] } = useSavedProperties()
-  const { data: allActive = [], isLoading } = useProperties({ status: 'active' })
+  const { data: savedProperties = [], isLoading } = useProperties({
+    ids: savedIds.length > 0 ? savedIds : undefined,
+    status: 'active',
+  })
   const saveProperty = useSaveProperty()
-
-  const savedProperties = allActive.filter(p => savedIds.includes(p.id))
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -20,7 +21,7 @@ export default function SavedProperties() {
 
       {isLoading ? (
         <PropertyGrid properties={[]} loading={true} savedIds={[]} />
-      ) : savedProperties.length === 0 ? (
+      ) : savedIds.length === 0 || savedProperties.length === 0 ? (
         <div className="text-center py-20">
           <Heart className="h-14 w-14 text-muted-foreground mx-auto mb-4" />
           <h2 className="font-serif text-2xl text-primary mb-2">No saved properties yet</h2>
@@ -33,7 +34,9 @@ export default function SavedProperties() {
         </div>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">{savedProperties.length} saved {savedProperties.length === 1 ? 'property' : 'properties'}</p>
+          <p className="text-sm text-muted-foreground">
+            {savedProperties.length} saved {savedProperties.length === 1 ? 'property' : 'properties'}
+          </p>
           <PropertyGrid
             properties={savedProperties}
             loading={false}

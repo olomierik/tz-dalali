@@ -3,36 +3,8 @@ import { FileText, CheckCircle, DollarSign, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthContext } from '@/contexts/AuthContext'
-
-const TX_STATUS_COLORS: Record<string, string> = {
-  partner_assigned: 'bg-purple-100 text-purple-700',
-  due_diligence: 'bg-yellow-100 text-yellow-700',
-  contract_prep: 'bg-yellow-100 text-yellow-700',
-  tax_clearance: 'bg-yellow-100 text-yellow-700',
-  escrow_funded: 'bg-orange-100 text-orange-700',
-  title_transfer: 'bg-orange-100 text-orange-700',
-  completed: 'bg-green-100 text-green-700',
-}
-
-function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
-  return (
-    <Card className="shadow-card">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-            <Icon className="h-5 w-5 text-gold" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="font-semibold text-lg text-primary">{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+import { StatCard } from '@/components/dashboard/StatCard'
 
 export default function PartnerDashboard() {
   const { profile } = useAuthContext()
