@@ -101,15 +101,15 @@ function FilterPanel({
         <div className="space-y-2">
           {/* Country */}
           <Select
-            value={filters.country_id ?? ''}
-            onValueChange={v => onChange({ country_id: v || undefined, region_id: undefined, district_id: undefined })}
+            value={filters.country_id ?? '__any__'}
+            onValueChange={v => onChange({ country_id: v === '__any__' ? undefined : v, region_id: undefined, district_id: undefined })}
             disabled={cLoading}
           >
             <SelectTrigger className="h-9">
               <SelectValue placeholder={cLoading ? 'Loading…' : 'Any country'} />
             </SelectTrigger>
             <SelectContent className="max-h-64 overflow-y-auto">
-              <SelectItem value="">Any country</SelectItem>
+              <SelectItem value="__any__">Any country</SelectItem>
               {countries.map(c => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.flag_emoji ? `${c.flag_emoji} ` : ''}{c.name}
