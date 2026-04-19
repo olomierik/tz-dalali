@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
 
       if (error) {
-        return { error: mapSupabaseError(error.message) }
+        return { error: mapSupabaseError(error.message), role: null }
       }
 
       if (data.user) {
