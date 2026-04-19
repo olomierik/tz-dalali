@@ -82,6 +82,7 @@ export type Database = {
       }
       districts: {
         Row: {
+          code: string | null
           council_type: string | null
           country_id: string | null
           created_at: string | null
@@ -94,6 +95,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          code?: string | null
           council_type?: string | null
           country_id?: string | null
           created_at?: string | null
@@ -106,6 +108,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          code?: string | null
           council_type?: string | null
           country_id?: string | null
           created_at?: string | null
