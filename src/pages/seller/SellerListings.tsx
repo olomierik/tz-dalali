@@ -10,7 +10,7 @@ import { PROPERTY_STATUS_COLORS } from '@/lib/statusColors'
 
 export default function SellerListings() {
   const { profile } = useAuthContext()
-  const { data: myProperties = [], isLoading } = useProperties({ seller_id: profile?.id })
+  const { data: myProperties = [], isLoading } = useProperties({ seller_id: profile?.id, status: 'any' })
 
   return (
     <div className="space-y-6 animate-fade-in">
