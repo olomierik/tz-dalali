@@ -101,15 +101,15 @@ function FilterPanel({
         <div className="space-y-2">
           {/* Country */}
           <Select
-            value={filters.country_id ?? ''}
-            onValueChange={v => onChange({ country_id: v || undefined, region_id: undefined, district_id: undefined })}
+            value={filters.country_id ?? '__any__'}
+            onValueChange={v => onChange({ country_id: v === '__any__' ? undefined : v, region_id: undefined, district_id: undefined })}
             disabled={cLoading}
           >
             <SelectTrigger className="h-9">
               <SelectValue placeholder={cLoading ? 'Loading…' : 'Any country'} />
             </SelectTrigger>
             <SelectContent className="max-h-64 overflow-y-auto">
-              <SelectItem value="">Any country</SelectItem>
+              <SelectItem value="__any__">Any country</SelectItem>
               {countries.map(c => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.flag_emoji ? `${c.flag_emoji} ` : ''}{c.name}
@@ -124,14 +124,14 @@ function FilterPanel({
               <div className="h-9 rounded-md border border-border bg-muted animate-pulse" />
             ) : regions.length > 0 ? (
               <Select
-                value={filters.region_id ?? ''}
-                onValueChange={v => onChange({ region_id: v || undefined, district_id: undefined })}
+                value={filters.region_id ?? '__any__'}
+                onValueChange={v => onChange({ region_id: v === '__any__' ? undefined : v, district_id: undefined })}
               >
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Any region" />
                 </SelectTrigger>
                 <SelectContent className="max-h-64 overflow-y-auto">
-                  <SelectItem value="">Any region</SelectItem>
+                  <SelectItem value="__any__">Any region</SelectItem>
                   {regions.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -144,14 +144,14 @@ function FilterPanel({
               <div className="h-9 rounded-md border border-border bg-muted animate-pulse" />
             ) : districts.length > 0 ? (
               <Select
-                value={filters.district_id ?? ''}
-                onValueChange={v => onChange({ district_id: v || undefined })}
+                value={filters.district_id ?? '__any__'}
+                onValueChange={v => onChange({ district_id: v === '__any__' ? undefined : v })}
               >
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Any district" />
                 </SelectTrigger>
                 <SelectContent className="max-h-64 overflow-y-auto">
-                  <SelectItem value="">Any district</SelectItem>
+                  <SelectItem value="__any__">Any district</SelectItem>
                   {districts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                 </SelectContent>
               </Select>
