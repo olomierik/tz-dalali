@@ -73,7 +73,7 @@ export const HeroSearch = () => {
       {/* Location + keyword row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2.5">
         {/* Country */}
-        <Select value={countryId || ANY_LOCATION} onValueChange={(value) => handleCountryChange(value === ANY_LOCATION ? "" : value)} disabled={cLoading}>
+        <Select value={countryId} onValueChange={(value) => handleCountryChange(value === ANY_LOCATION ? "" : value)} disabled={cLoading}>
           <SelectTrigger className="h-12 bg-background gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-gold shrink-0" />
             <SelectValue placeholder={cLoading ? "Loading…" : "Any country"} />
@@ -90,10 +90,9 @@ export const HeroSearch = () => {
 
         {/* Region */}
           <Select
-            value={regionId || ANY_LOCATION}
+            value={regionId}
             onValueChange={(value) => handleRegionChange(value === ANY_LOCATION ? "" : value)}
-          disabled={!countryId || regions.length === 0}
-        >
+          >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any region" />
           </SelectTrigger>
@@ -107,10 +106,9 @@ export const HeroSearch = () => {
 
         {/* District */}
           <Select
-            value={districtId || ANY_LOCATION}
+            value={districtId}
             onValueChange={(value) => setDistrictId(value === ANY_LOCATION ? "" : value)}
-          disabled={!regionId || districts.length === 0}
-        >
+          >
           <SelectTrigger className="h-12 bg-background">
             <SelectValue placeholder="Any district" />
           </SelectTrigger>
