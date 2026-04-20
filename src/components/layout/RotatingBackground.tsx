@@ -4,7 +4,7 @@ import { useBackgroundImages } from '@/hooks/useBackgroundImages'
 interface RotatingBackgroundProps {
   /** Time each image stays fully visible, ms (default 6000). */
   intervalMs?: number
-  /** Overlay darkness 0-1 to keep foreground readable (default 0.78). */
+  /** Overlay darkness 0-1 to keep foreground readable (default 0.15 — very light). */
   overlayOpacity?: number
 }
 
@@ -25,7 +25,7 @@ function shuffle<T>(arr: T[]): T[] {
  */
 export function RotatingBackground({
   intervalMs = 6000,
-  overlayOpacity = 0.78,
+  overlayOpacity = 0.15,
 }: RotatingBackgroundProps) {
   const { data: images = [] } = useBackgroundImages(24)
   const pool = useMemo(() => shuffle(images), [images])
@@ -89,13 +89,11 @@ export function RotatingBackground({
           opacity: showA ? 0 : 1,
         }}
       />
-      {/* Readability overlay — navy tint */}
+      {/* Very light readability scrim — keeps images vivid, only slightly darkens edges */}
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(180deg, hsl(var(--primary) / ${
-            overlayOpacity * 0.75
-          }) 0%, hsl(var(--primary) / ${overlayOpacity}) 100%)`,
+          background: `linear-gradient(180deg, rgba(0,0,0,${overlayOpacity * 0.4}) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0) 65%, rgba(0,0,0,${overlayOpacity}) 100%)`,
         }}
       />
     </div>
