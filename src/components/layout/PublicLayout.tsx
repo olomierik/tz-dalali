@@ -8,7 +8,7 @@ export const PublicLayout = () => {
     <div className="min-h-screen flex flex-col bg-transparent">
       <RotatingBackground />
       <SiteHeader />
-      <main className="flex-1">
+      <main className="flex-1 over-image">
         <Outlet />
       </main>
       <SiteFooter />
