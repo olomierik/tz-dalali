@@ -130,3 +130,52 @@
     background-color: hsl(var(--gold));
   }
 }
+
+/* ─── Public-page over-image styling ──────────────────────────────────────────
+   When `.over-image` is applied to <main>, the rotating background photos
+   show through. Text becomes white; cards/forms get a dark glassy panel
+   so they stay readable against any image. */
+@layer components {
+  .over-image {
+    color: #fff;
+  }
+  .over-image h1,
+  .over-image h2,
+  .over-image h3,
+  .over-image h4,
+  .over-image h5,
+  .over-image h6,
+  .over-image p,
+  .over-image span,
+  .over-image li,
+  .over-image label {
+    color: #fff;
+  }
+  .over-image .text-muted-foreground {
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+  .over-image .text-primary,
+  .over-image .text-foreground {
+    color: #fff !important;
+  }
+  /* Section backgrounds that were opaque become transparent so photos show */
+  .over-image section.bg-primary,
+  .over-image section.bg-secondary,
+  .over-image section.bg-background,
+  .over-image section.bg-muted {
+    background-color: transparent !important;
+  }
+  /* Cards / panels become translucent dark glass */
+  .over-image .bg-card,
+  .over-image .bg-secondary,
+  .over-image .bg-popover {
+    background-color: rgba(15, 23, 42, 0.55) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  .over-image h1,
+  .over-image h2 {
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+  }
+}
