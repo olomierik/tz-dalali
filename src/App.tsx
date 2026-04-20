@@ -12,16 +12,13 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 // Public pages
 import Home from "./pages/Home";
 import Listings from "./pages/Listings";
-import Partners from "./pages/Partners";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import HowItWorks from "./pages/HowItWorks";
-import Pricing from "./pages/Pricing";
+import Location from "./pages/Location";
+import SoldRented from "./pages/SoldRented";
 import Auth from "./pages/Auth";
 import PropertyDetail from "./pages/PropertyDetail";
 import NotFound from "./pages/NotFound";
-import Terms from "./pages/legal/Terms";
-import Privacy from "./pages/legal/Privacy";
 
 // Buyer dashboard
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -72,16 +69,13 @@ const App = () => (
             {/* Public routes */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/location" element={<Location />} />
               <Route path="/listings" element={<Listings />} />
               <Route path="/listings/:id" element={<PropertyDetail />} />
-              <Route path="/partners" element={<Partners />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/sold" element={<SoldRented />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
             </Route>
 
             {/* Buyer dashboard */}
@@ -150,7 +144,12 @@ const App = () => (
             </Route>
 
             {/* Legacy redirects */}
-            <Route path="/agents" element={<Navigate to="/partners" replace />} />
+            <Route path="/agents" element={<Navigate to="/location" replace />} />
+            <Route path="/partners" element={<Navigate to="/about" replace />} />
+            <Route path="/how-it-works" element={<Navigate to="/about" replace />} />
+            <Route path="/pricing" element={<Navigate to="/about" replace />} />
+            <Route path="/terms" element={<Navigate to="/" replace />} />
+            <Route path="/privacy" element={<Navigate to="/" replace />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

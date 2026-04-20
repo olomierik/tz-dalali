@@ -3,38 +3,38 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SiteHeader = () => {
   const [open, setOpen] = useState(false);
-  const { lang, toggle, t } = useLanguage();
 
   const nav = [
-    { to: "/listings?type=sale", label: t('nav.sale') },
-    { to: "/listings?type=rent", label: t('nav.rent') },
-    { to: "/listings?property_type=commercial", label: t('nav.commercial') },
-    { to: "/partners", label: t('nav.partners') },
-    { to: "/how-it-works", label: t('nav.how_it_works') },
-    { to: "/about", label: t('nav.about') },
+    { to: "/", label: "Home", end: true },
+    { to: "/about", label: "About" },
+    { to: "/location", label: "Location" },
+    { to: "/listings?type=sale", label: "For Sale" },
+    { to: "/listings?type=rent", label: "For Rent" },
+    { to: "/sold", label: "Sold & Rented" },
+    { to: "/contact", label: "Contact" },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container flex h-20 items-center justify-between">
+    <header className="sticky top-0 z-40 w-full bg-black/40 backdrop-blur-md">
+      <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-baseline gap-0.5">
-          <span className="font-bold text-2xl tracking-tight text-primary">TZ</span>
-          <span className="font-serif text-2xl text-gold font-semibold">Dalali</span>
+          <span className="font-bold text-xl tracking-tight text-white">TZ</span>
+          <span className="font-serif text-xl text-gold font-semibold">Dalali</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-5">
           {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
+              end={n.end}
               className={({ isActive }) =>
                 cn(
-                  "text-sm font-medium tracking-wide uppercase transition-colors",
-                  isActive ? "text-gold" : "text-foreground/80 hover:text-gold",
+                  "text-sm tracking-wide transition-colors",
+                  isActive ? "text-gold" : "text-white/85 hover:text-gold",
                 )
               }
             >
@@ -43,24 +43,14 @@ export const SiteHeader = () => {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
-          <button
-            onClick={toggle}
-            className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded border border-border/50 hover:border-border"
-            title={lang === 'en' ? 'Switch to Chinese' : '切换到英文'}
-          >
-            {lang === 'en' ? '中文' : 'EN'}
-          </button>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/auth">{t('nav.sign_in')}</Link>
-          </Button>
-          <Button asChild variant="gold" size="sm">
-            <Link to="/seller/listings/new">{t('nav.list_property')}</Link>
+        <div className="hidden md:flex items-center">
+          <Button asChild variant="ghost" size="sm" className="text-white/85 hover:text-gold hover:bg-transparent">
+            <Link to="/auth">Sign in</Link>
           </Button>
         </div>
 
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2 text-white"
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((v) => !v)}
         >
@@ -69,32 +59,25 @@ export const SiteHeader = () => {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-border/60 bg-background">
+        <div className="md:hidden border-t border-white/10 bg-black/70 backdrop-blur-md">
           <div className="container py-4 flex flex-col gap-3">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 onClick={() => setOpen(false)}
-                className="text-sm font-medium uppercase tracking-wide py-2"
+                className="text-sm py-2 text-white/90 hover:text-gold"
               >
                 {n.label}
               </Link>
             ))}
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={toggle}
-                className="text-xs font-medium text-muted-foreground border border-border/50 rounded px-3 py-1.5"
-              >
-                {lang === 'en' ? '中文' : 'EN'}
-              </button>
-              <Button asChild variant="outline" size="sm" className="flex-1">
-                <Link to="/auth" onClick={() => setOpen(false)}>{t('nav.sign_in')}</Link>
-              </Button>
-              <Button asChild variant="gold" size="sm" className="flex-1">
-                <Link to="/seller/listings/new" onClick={() => setOpen(false)}>{t('nav.list_property')}</Link>
-              </Button>
-            </div>
+            <Link
+              to="/auth"
+              onClick={() => setOpen(false)}
+              className="text-sm py-2 text-gold"
+            >
+              Sign in
+            </Link>
           </div>
         </div>
       )}

@@ -11,11 +11,11 @@ const SoldRented = () => {
       <h1 className="font-serif text-4xl md:text-5xl mb-2">Sold &amp; Rented</h1>
       <p className="text-white/80 mb-8">A selection of recently completed deals.</p>
 
-      <PropertyGrid
-        properties={closed}
-        loading={isLoading}
-        emptyMessage="No completed deals to show yet."
-      />
+      {!isLoading && closed.length === 0 ? (
+        <p className="text-white/70">No completed deals to show yet.</p>
+      ) : (
+        <PropertyGrid properties={closed} loading={isLoading} />
+      )}
     </div>
   );
 };
