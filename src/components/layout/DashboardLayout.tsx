@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { NotificationBell } from '@/components/common/NotificationBell'
+import { RotatingBackground } from '@/components/layout/RotatingBackground'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 
@@ -153,7 +154,8 @@ export function DashboardLayout() {
     : profile?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-transparent">
+      <RotatingBackground overlayOpacity={0.85} />
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar border-r border-sidebar-border fixed inset-y-0 left-0 z-30">
         <SidebarContent />
