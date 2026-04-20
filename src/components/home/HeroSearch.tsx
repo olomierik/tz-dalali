@@ -7,6 +7,8 @@ import { Search, MapPin } from "lucide-react";
 import { useCountries, useRegions, useDistricts } from "@/hooks/useCountries";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+const ANY_LOCATION = "__any_location__";
+
 export const HeroSearch = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -79,7 +81,7 @@ export const HeroSearch = () => {
             <SelectValue placeholder={cLoading ? t('listings.loading') : t('search.country')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">{t('search.country')}</SelectItem>
+            <SelectItem value={ANY_LOCATION}>{t('search.country')}</SelectItem>
             {countries.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.flag_emoji ? `${c.flag_emoji} ` : ""}{c.name}
@@ -97,7 +99,7 @@ export const HeroSearch = () => {
             <SelectValue placeholder={t('search.region')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">{t('search.region')}</SelectItem>
+            <SelectItem value={ANY_LOCATION}>{t('search.region')}</SelectItem>
             {regions.map((r) => (
               <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
             ))}
@@ -113,7 +115,7 @@ export const HeroSearch = () => {
             <SelectValue placeholder={t('search.district')} />
           </SelectTrigger>
           <SelectContent className="max-h-64 overflow-y-auto">
-            <SelectItem value="">{t('search.district')}</SelectItem>
+            <SelectItem value={ANY_LOCATION}>{t('search.district')}</SelectItem>
             {districts.map((d) => (
               <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
             ))}
