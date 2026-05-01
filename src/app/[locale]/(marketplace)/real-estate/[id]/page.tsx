@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Maximize, MapPin, Shield, CheckCircle2 } from "lucide-react";
+import { GoogleMap } from "@/components/shared/GoogleMap";
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -58,9 +59,16 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-bold mb-4">Description</h3>
-                <p className="text-gray-600 leading-relaxed">{property.description}</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Description</h3>
+                  <p className="text-gray-600 leading-relaxed">{property.description}</p>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Location</h3>
+                  <GoogleMap location={property.location} />
+                </div>
               </div>
             </div>
           </div>

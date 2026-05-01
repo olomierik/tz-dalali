@@ -48,3 +48,23 @@ export const generateDescription = action({
     return response.content[0].type === "text" ? response.content[0].text : "Professional description coming soon.";
   },
 });
+
+export const recommendPrice = action({
+  args: {
+    type: v.union(v.literal("property"), v.literal("car")),
+    specs: v.any(),
+  },
+  handler: async (ctx: any, args: any) => {
+    const prompt = args.type === "property"
+      ? `Based on market trends in ${args.specs.location}, what is the recommended price range for a ${args.specs.type} with ${args.specs.bedrooms} bedrooms? Give a concise answer with price range in ${args.specs.currency || 'USD'}.`
+      : `Based on market trends, what is the recommended price range for a ${args.specs.year} ${args.specs.make} ${args.specs.model} with ${args.specs.mileage} miles? Give a concise answer with price range in ${args.specs.currency || 'USD'}.`;
+
+    const response = await anthropic.messages.create({
+      model: "claude-3-5-sonnet-20240620",
+      max_tokens: 256,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    return response.content[0].type === "text" ? response.content[0].text : "Market analysis unavailable.";
+  },
+});

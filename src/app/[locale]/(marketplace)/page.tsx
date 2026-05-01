@@ -9,7 +9,12 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
+import { useTranslations } from "next-intl";
+
+import { VerticalToggle } from "@/components/shared/VerticalToggle";
+
 export default function Home() {
+  const t = useTranslations("HomePage");
   const [vertical, setVertical] = useState<"property" | "car">("property");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -25,33 +30,16 @@ export default function Home() {
         <div className="container relative py-16 md:py-24 mx-auto px-4">
           <div className="text-center mb-10">
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl mb-4">
-              Find your next {vertical === "property" ? "stay" : "ride"}
+              {t("title", { vertical })}
             </h1>
             <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-              Search {vertical === "property" ? "properties" : "cars"} across 195 countries with legal guarantee and escrow protection
+              {t("subtitle", { vertical })}
             </p>
           </div>
 
           <div className="max-w-5xl mx-auto">
             {/* Vertical Toggle */}
-            <div className="flex gap-2 mb-4 justify-center">
-              <Button 
-                variant={vertical === "property" ? "default" : "secondary"}
-                className={vertical === "property" ? "bg-[#febb02] text-[#003580] hover:bg-[#febb02]/90" : "bg-white/10 text-white hover:bg-white/20"}
-                onClick={() => setVertical("property")}
-              >
-                <Building2 className="mr-2 h-4 w-4" />
-                Real Estate
-              </Button>
-              <Button 
-                variant={vertical === "car" ? "default" : "secondary"}
-                className={vertical === "car" ? "bg-[#febb02] text-[#003580] hover:bg-[#febb02]/90" : "bg-white/10 text-white hover:bg-white/20"}
-                onClick={() => setVertical("car")}
-              >
-                <Car className="mr-2 h-4 w-4" />
-                Cars
-              </Button>
-            </div>
+            <VerticalToggle vertical={vertical} onChange={setVertical} />
 
             <div className="bg-white rounded-xl shadow-2xl p-2 md:p-3">
               <div className="flex flex-col md:flex-row gap-2">
@@ -60,7 +48,7 @@ export default function Home() {
                     <MapPin className="h-5 w-5" />
                   </div>
                   <Input
-                    placeholder={vertical === "property" ? "Where are you going?" : "What car are you looking for?"}
+                    placeholder={vertical === "property" ? t("searchPlaceholderProperty") : t("searchPlaceholderCar")}
                     className="pl-10 h-12 md:h-14 border-0 text-black text-base focus-visible:ring-[#003580]"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -72,7 +60,7 @@ export default function Home() {
                   className="h-12 md:h-14 px-8 bg-[#febb02] text-[#003580] hover:bg-[#febb02]/90 font-semibold rounded-lg"
                 >
                   <Search className="h-5 w-5 md:mr-2" />
-                  <span className="hidden md:inline">Search</span>
+                  <span className="hidden md:inline">{t("searchButton")}</span>
                 </Button>
               </div>
             </div>
@@ -100,9 +88,9 @@ export default function Home() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-serif">Featured Properties</h2>
+            <h2 className="text-3xl font-serif">{t("featuredProperties")}</h2>
             <Link href="/real-estate" className="text-[#003580] font-medium flex items-center hover:underline">
-              View all <ChevronRight className="h-4 w-4" />
+              {t("viewAll")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -129,9 +117,9 @@ export default function Home() {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-serif">Trending Cars</h2>
+            <h2 className="text-3xl font-serif">{t("trendingCars")}</h2>
             <Link href="/cars" className="text-[#003580] font-medium flex items-center hover:underline">
-              View all <ChevronRight className="h-4 w-4" />
+              {t("viewAll")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -159,9 +147,9 @@ export default function Home() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-serif mb-4">Why use TzDalali?</h2>
+            <h2 className="text-3xl font-serif mb-4">{t("whyUse")}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
-              We bridge the gap between global buyers and local markets with secure transactions and legal protection.
+              {t("whyUseDesc")}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">

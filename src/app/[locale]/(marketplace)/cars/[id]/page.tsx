@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Gauge, Settings2, Fuel, MapPin, Shield, CheckCircle2 } from "lucide-react";
+import { GoogleMap } from "@/components/shared/GoogleMap";
 
 export default function CarDetailPage() {
   const params = useParams();
@@ -68,9 +69,16 @@ export default function CarDetailPage() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-bold mb-4">Description</h3>
-                <p className="text-gray-600 leading-relaxed">{car.description}</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Description</h3>
+                  <p className="text-gray-600 leading-relaxed">{car.description}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-bold mb-4">Location</h3>
+                  <GoogleMap location={car.location} />
+                </div>
               </div>
             </div>
           </div>

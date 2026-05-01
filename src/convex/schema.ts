@@ -71,4 +71,12 @@ export default defineSchema({
     paymentReference: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_buyer", ["buyerId"]).index("by_seller", ["sellerId"]),
+
+  notifications: defineTable({
+    userId: v.id("users"),
+    title: v.string(),
+    message: v.string(),
+    read: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_user", ["userId"]),
 });
