@@ -3,21 +3,29 @@ import { translations, type Lang } from '@/lib/i18n'
 
 interface LangCtx {
   lang: Lang
-  toggle: () => void
+  setLang: (lang: Lang) => void
   t: (key: string, vars?: Record<string, string | number>) => string
 }
 
-const LangContext = createContext<LangCtx>({ lang: 'en', toggle: () => {}, t: k => k })
+const LangContext = createContext<LangCtx>({ lang: 'en', setLang: () => {}, t: k => k })
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => {
-    try { return (localStorage.getItem('tzdalali:lang') as Lang) ?? 'en' } catch { return 'en' }
+  const [lang, setLangState] = useState<Lang>(() => {
+    try {
+      return (localStorage.getItem('tzdalali:lang') as Lang) ?? 'en'
+    } catch (e) {
+      console.error('Failed to load language from localStorage', e)
+      return 'en'
+    }
   })
 
-  const toggle = () => {
-    const next: Lang = lang === 'en' ? 'zh' : 'en'
-    setLang(next)
-    try { localStorage.setItem('tzdalali:lang', next) } catch {}
+  const setLang = (next: Lang) => {
+    setLangState(next)
+    try {
+      localStorage.setItem('tzdalali:lang', next)
+    } catch (e) {
+      console.error('Failed to save language to localStorage', e)
+    }
   }
 
   const t = (key: string, vars?: Record<string, string | number>): string => {
@@ -28,7 +36,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return str
   }
 
-  return <LangContext.Provider value={{ lang, toggle, t }}>{children}</LangContext.Provider>
+  return <LangContext.Provider value={{ lang, setLang, t }}>{children}</LangContext.Provider>
 }
 
 export const useLanguage = () => useContext(LangContext)

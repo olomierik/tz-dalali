@@ -1,39 +1,46 @@
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Globe, ChevronDown, User } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, User, Car, Home, Search } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { languages, type Lang } from "@/lib/i18n";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const SiteHeader = () => {
   const [open, setOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const { lang, toggle } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const { user } = useAuthContext();
 
   const mainNav = [
-    { to: "/", label: lang === 'en' ? 'Home' : '首页', end: true },
-    { to: "/listings?type=sale", label: lang === 'en' ? 'Stays' : '住宿' },
-    { to: "/listings?type=rent", label: lang === 'en' ? 'Rentals' : '租房' },
-    { to: "/listings?property_type=commercial", label: lang === 'en' ? 'Commercial' : '商业' },
-    { to: "/about", label: lang === 'en' ? 'About' : '关于' },
+    { to: "/", label: t('nav.home'), end: true },
+    { to: "/real-estate", label: t('nav.real_estate'), icon: <Home className="h-4 w-4" /> },
+    { to: "/cars", label: t('nav.cars'), icon: <Car className="h-4 w-4" /> },
+    { to: "/search", label: t('nav.search_in_header') || 'Search', icon: <Search className="h-4 w-4" /> },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200 shadow-sm">
-      <div className="container">
-        <div className="flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gold/20 shadow-sm">
+      <div className="container mx-auto px-4">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-booking-blue rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TZ</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center group-hover:rotate-6 transition-transform">
+              <span className="text-gold font-bold text-lg">TZ</span>
             </div>
-            <span className="font-bold text-xl tracking-tight text-booking-blue">Dalali</span>
+            <span className="font-serif font-bold text-2xl tracking-tight text-black">
+              Dalali<span className="text-gold">.</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-8">
             {mainNav.map((n) => (
               <NavLink
                 key={n.to}
@@ -41,86 +48,83 @@ export const SiteHeader = () => {
                 end={n.end}
                 className={({ isActive }) =>
                   cn(
-                    "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive 
-                      ? "bg-booking-blue.text-white" 
-                      : "text-gray-700 hover:bg-gray-100"
+                    "flex items-center gap-2 text-sm font-medium transition-all hover:text-gold",
+                    isActive ? "text-gold" : "text-gray-600"
                   )
                 }
               >
+                {n.icon}
                 {n.label}
               </NavLink>
             ))}
-            
-            {/* More dropdown */}
-            <div className="relative">
-              <button 
-                onClick={() => setMoreOpen(!moreOpen)}
-                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                More
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              {moreOpen && (
-                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 animate-fade-in">
-                  <Link to="/contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    {lang === 'en' ? 'Contact' : '联系我们'}
-                  </Link>
-                  <Link to="/location" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    {lang === 'en' ? 'Locations' : '地区'}
-                  </Link>
-                  <Link to="/sold" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    {lang === 'en' ? 'Sold & Rented' : '已售/已租'}
-                  </Link>
-                </div>
-              )}
-            </div>
           </nav>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-2">
-            {/* Language toggle */}
-            <button 
-              onClick={toggle}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <Globe className="h-4 w-4" />
-              <span className="font-medium">{lang === 'en' ? 'EN' : '中'}</span>
-            </button>
+          <div className="flex items-center gap-4">
+            {/* Language Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span className="uppercase">{lang}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {languages.map((l) => (
+                  <DropdownMenuItem
+                    key={l.code}
+                    onClick={() => setLang(l.code)}
+                    className={cn(lang === l.code && "bg-gray-100 font-bold")}
+                  >
+                    <span className="mr-2">{l.flag}</span>
+                    {l.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-            {/* Currency placeholder */}
-            <button className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-              <span className="font-medium">USD</span>
-            </button>
-
-            {/* User menu */}
+            {/* Auth */}
             {user ? (
-              <Button asChild variant="outline" size="sm" className="hidden md:flex gap-1.5 border-booking-blue text-booking-blue hover:bg-booking-blue-lighter">
+              <Button asChild variant="outline" size="sm" className="hidden md:flex gap-2 border-gold text-black hover:bg-gold hover:text-white transition-all">
                 <Link to="/dashboard">
                   <User className="h-4 w-4" />
-                  {lang === 'en' ? 'Dashboard' : '控制台'}
+                  {t('nav.dashboard') || 'Dashboard'}
                 </Link>
               </Button>
             ) : (
-              <Button asChild variant="outline" size="sm" className="hidden md:flex border-booking-blue text-booking-blue hover:bg-booking-blue-lighter">
-                <Link to="/auth">
-                  {lang === 'en' ? 'Sign in' : '登录'}
-                </Link>
+              <Button asChild variant="ghost" size="sm" className="hidden md:flex">
+                <Link to="/auth">{t('nav.sign_in')}</Link>
               </Button>
             )}
 
-            {/* List Property CTA */}
-            <Button asChild size="sm" className="hidden md:flex bg-booking-yellow text-booking-blue hover:bg-yellow-400 font-semibold">
-              <Link to="/seller/listings/new">
-                {lang === 'en' ? 'List Property' : '发布房产'}
-              </Link>
-            </Button>
+            {/* List CTA */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="hidden md:flex bg-black text-gold hover:bg-black/90 font-semibold border border-gold/50">
+                  {t('nav.list_now') || 'List Item'}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/seller/listings/new?type=property" className="flex items-center gap-2">
+                    <Home className="h-4 w-4" />
+                    {t('nav.list_property')}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/seller/listings/new?type=car" className="flex items-center gap-2">
+                    <Car className="h-4 w-4" />
+                    {t('nav.list_car')}
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-md"
-              aria-label={open ? "Close menu" : "Open menu"}
-              onClick={() => setOpen((v) => !v)}
+              className="lg:hidden p-2 text-gray-700"
+              onClick={() => setOpen(!open)}
             >
               {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -130,46 +134,37 @@ export const SiteHeader = () => {
 
       {/* Mobile menu */}
       {open && (
-        <div className="lg:hidden bg-white border-t border-gray-200 animate-slide-up">
-          <div className="container py-4 flex flex-col gap-2">
+        <div className="lg:hidden bg-white border-t border-gray-100 animate-in slide-in-from-top duration-300">
+          <div className="container mx-auto px-4 py-6 flex flex-col gap-4">
             {mainNav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 onClick={() => setOpen(false)}
-                className="px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-3 py-3 text-lg font-medium text-gray-700 hover:text-gold"
               >
+                {n.icon}
                 {n.label}
               </Link>
             ))}
-            <div className="border-t border-gray-200 my-2 pt-2">
-              <Link to="/contact" onClick={() => setOpen(false)} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
-                {lang === 'en' ? 'Contact' : '联系我们'}
-              </Link>
-              <Link to="/location" onClick={() => setOpen(false)} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
-                {lang === 'en' ? 'Locations' : '地区'}
-              </Link>
-              <Link to="/sold" onClick={() => setOpen(false)} className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
-                {lang === 'en' ? 'Sold & Rented' : '已售/已租'}
-              </Link>
-            </div>
-            <div className="border-t border-gray-200 pt-2 flex flex-col gap-2">
-              <button onClick={toggle} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
-                <Globe className="h-4 w-4" />
-                {lang === 'en' ? 'Switch to 中文' : '切换到 English'}
-              </button>
-              {!user ? (
-                <Link to="/auth" onClick={() => setOpen(false)} className="px-4 py-3 text-sm font-medium text-booking-blue hover:bg-gray-100 rounded-md">
-                  {lang === 'en' ? 'Sign in' : '登录'}
-                </Link>
-              ) : (
-                <Link to="/dashboard" onClick={() => setOpen(false)} className="px-4 py-3 text-sm font-medium text-booking-blue hover:bg-gray-100 rounded-md">
-                  {lang === 'en' ? 'Dashboard' : '控制台'}
-                </Link>
-              )}
-              <Link to="/seller/listings/new" onClick={() => setOpen(false)} className="mx-4 py-3 text-sm font-semibold text-center text-booking-blue bg-booking-yellow rounded-md">
-                {lang === 'en' ? 'List Property' : '发布房产'}
-              </Link>
+            <hr className="border-gray-100" />
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('nav.language') || 'Language'}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {languages.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => { setLang(l.code); setOpen(false); }}
+                    className={cn(
+                      "flex items-center gap-2 p-2 rounded-md text-sm",
+                      lang === l.code ? "bg-black text-gold" : "bg-gray-50 text-gray-600"
+                    )}
+                  >
+                    <span>{l.flag}</span>
+                    {l.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

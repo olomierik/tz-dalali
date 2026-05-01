@@ -1,171 +1,92 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Globe, Mail, Phone, MapPin } from "lucide-react";
+import { Globe, Mail, Phone, MapPin, Instagram, Twitter, Facebook } from "lucide-react";
 
 export const SiteFooter = () => {
-  const { lang } = useLanguage();
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-100 border-t border-gray-200 mt-16">
-      {/* Main footer content */}
-      <div className="container py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          {/* Brand column */}
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-booking-blue rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">TZ</span>
+    <footer className="bg-black text-white pt-20 pb-10">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-20">
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center">
+                <span className="text-black font-bold text-lg">TZ</span>
               </div>
-              <span className="font-bold text-xl tracking-tight text-booking-blue">Dalali</span>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">
-              {lang === 'en' 
-                ? 'Your trusted global property broker with legal guarantee and escrow protection.'
-                : '您值得信赖的全球房产中介，提供法律保障和托管保护。'}
+              <span className="font-serif font-bold text-2xl tracking-tight text-white">
+                Dalali<span className="text-gold">.</span>
+              </span>
+            </Link>
+            <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
+              The world's first global marketplace for high-value assets with integrated legal protection and escrow.
+              Operating in 195 countries with a network of verified law firms.
             </p>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Globe className="h-4 w-4" />
-              <span>195 {lang === 'en' ? 'countries' : '个国家'}</span>
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-gold hover:border-gold hover:text-black transition-all">
+                <Twitter className="h-4 w-4" />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-gold hover:border-gold hover:text-black transition-all">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full border border-gray-800 flex items-center justify-center hover:bg-gold hover:border-gold hover:text-black transition-all">
+                <Facebook className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
-          {/* For Guests */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-sm">
-              {lang === 'en' ? 'For Guests' : '为客人服务'}
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link to="/listings?type=sale" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Properties for Sale' : '出售房产'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/listings?type=rent" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Rentals' : '租房'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/listings?property_type=commercial" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Commercial' : '商业地产'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/listings?ai=true" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'AI Smart Search' : 'AI智能搜索'}
-                </Link>
-              </li>
+            <h4 className="font-bold text-lg mb-6 text-gold uppercase tracking-widest text-sm">{t('vertical.real_estate')}</h4>
+            <ul className="space-y-4 text-gray-400 text-sm">
+              <li><Link to="/real-estate?type=sale" className="hover:text-gold transition-colors">Residential For Sale</Link></li>
+              <li><Link to="/real-estate?type=rent" className="hover:text-gold transition-colors">Rentals & Stays</Link></li>
+              <li><Link to="/real-estate?type=commercial" className="hover:text-gold transition-colors">Commercial Assets</Link></li>
+              <li><Link to="/real-estate?type=land" className="hover:text-gold transition-colors">Land & Plots</Link></li>
             </ul>
           </div>
 
-          {/* For Property Owners */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-sm">
-              {lang === 'en' ? 'For Owners' : '为业主服务'}
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link to="/seller/listings/new" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'List Your Property' : '发布房产'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/seller" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Owner Dashboard' : '业主面板'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Pricing' : '定价'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/partner" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Become a Partner' : '成为合作伙伴'}
-                </Link>
-              </li>
+            <h4 className="font-bold text-lg mb-6 text-gold uppercase tracking-widest text-sm">{t('vertical.cars')}</h4>
+            <ul className="space-y-4 text-gray-400 text-sm">
+              <li><Link to="/cars?body=luxury" className="hover:text-gold transition-colors">Luxury Collection</Link></li>
+              <li><Link to="/cars?body=suv" className="hover:text-gold transition-colors">SUVs & Off-road</Link></li>
+              <li><Link to="/cars?condition=new" className="hover:text-gold transition-colors">Brand New Cars</Link></li>
+              <li><Link to="/cars?type=electric" className="hover:text-gold transition-colors">Electric Vehicles</Link></li>
             </ul>
           </div>
 
-          {/* About */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-sm">
-              {lang === 'en' ? 'About' : '关于'}
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link to="/about" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'About TzDalali' : '关于 TzDalali'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/location" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'All Locations' : '所有地区'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Contact Us' : '联系我们'}
-                </Link>
-              </li>
-              <li>
-                <Link to="/auth" className="text-gray-500 hover:text-booking-blue transition-colors">
-                  {lang === 'en' ? 'Sign In' : '登录'}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-4 text-sm">
-              {lang === 'en' ? 'Support' : '支持'}
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <a href="mailto:support@tzdalali.com" className="text-gray-500 hover:text-booking-blue transition-colors flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5" />
-                  {lang === 'en' ? 'Help Center' : '帮助中心'}
-                </a>
-              </li>
-              <li>
-                <a href="tel:+255123456789" className="text-gray-500 hover:text-booking-blue transition-colors flex items-center gap-1.5">
-                  <Phone className="h-3.5 w-3.5" />
-                  {lang === 'en' ? 'Call Us' : '致电我们'}
-                </a>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-500 hover:text-booking-blue transition-colors flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {lang === 'en' ? 'Find Us' : '找到我们'}
-                </Link>
-              </li>
+            <h4 className="font-bold text-lg mb-6 text-gold uppercase tracking-widest text-sm">Company</h4>
+            <ul className="space-y-4 text-gray-400 text-sm">
+              <li><Link to="/about" className="hover:text-gold transition-colors">About TzDalali</Link></li>
+              <li><Link to="/partners" className="hover:text-gold transition-colors">Global Partners</Link></li>
+              <li><Link to="/how-it-works" className="hover:text-gold transition-colors">How It Works</Link></li>
+              <li><Link to="/contact" className="hover:text-gold transition-colors">Contact Support</Link></li>
             </ul>
           </div>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div className="border-t border-gray-200">
-        <div className="container py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <span>© {currentYear} TzDalali</span>
-              <span className="hidden md:inline">·</span>
-              <Link to="/" className="hover:text-booking-blue">{lang === 'en' ? 'Terms' : '条款'}</Link>
-              <Link to="/" className="hover:text-booking-blue">{lang === 'en' ? 'Privacy' : '隐私'}</Link>
-              <Link to="/" className="hover:text-booking-blue">{lang === 'en' ? 'Cookies' : 'Cookies'}</Link>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span>{lang === 'en' ? 'Legal partners: ' : '法律合作伙伴: '}</span>
-              <span className="font-medium">GODVIL Consult</span>
-              <span>·</span>
-              <span className="font-medium">PRIME AUDITORS</span>
-            </div>
+        <div className="border-t border-gray-900 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-6 text-xs text-gray-500">
+            <span>© {currentYear} TzDalali Global Ltd.</span>
+            <Link to="/terms" className="hover:text-gold">Terms</Link>
+            <Link to="/privacy" className="hover:text-gold">Privacy</Link>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <ShieldCheck className="h-4 w-4 text-gold" />
+            <span>Encrypted Transactions & Escrow Protected</span>
           </div>
         </div>
       </div>
     </footer>
   );
 };
+
+function ShieldCheck({ className }: { className?: string }) {
+  return (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+    </svg>
+  );
+}
