@@ -12,7 +12,15 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Next.js
+.next/
+out/
+
+# PWA
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/manifest.json
 .vscode/*
 !.vscode/extensions.json
 .idea
