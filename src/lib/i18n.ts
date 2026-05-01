@@ -2,8 +2,8 @@ export type Lang = 'en' | 'zh'
 
 const en = {
   // Navigation
-  'nav.sale': 'For Sale',
-  'nav.rent': 'For Rent',
+  'nav.sale': 'Stays',
+  'nav.rent': 'Rentals',
   'nav.commercial': 'Commercial',
   'nav.partners': 'Partners',
   'nav.how_it_works': 'How It Works',
@@ -13,10 +13,10 @@ const en = {
 
   // Hero
   'hero.tagline': 'Your Trusted Global Property Broker',
-  'hero.title_1': 'Buy and sell property ',
+  'hero.title_1': 'Find your next stay',
   'hero.title_em': 'anywhere',
   'hero.title_2': ' on Earth.',
-  'hero.body': 'Legally guaranteed, escrow-protected, with verified local law firms and tax consultants in every country.',
+  'hero.body': 'Search properties across 195 countries with legal guarantee and escrow protection.',
 
   // Search widget
   'search.buy': 'Buy',
@@ -25,7 +25,7 @@ const en = {
   'search.country': 'Any country',
   'search.region': 'Any region',
   'search.district': 'Any district',
-  'search.keyword_ph': 'Property type, neighbourhood…',
+  'search.keyword_ph': 'Where are you going?',
   'search.button': 'Search',
 
   // Home sections
@@ -46,6 +46,9 @@ const en = {
   'home.nearby_title_loc': 'Properties in {name}',
   'home.nearby_title_global': 'Latest Listings',
   'home.view_all': 'View all',
+  'home.recently_listed': 'Recently listed',
+  'home.popular_destinations': 'Popular destinations',
+  'home.why_book': 'Why book with us',
 
   'home.process_label': 'Process',
   'home.process_title': 'How TzDalali works',
@@ -96,34 +99,58 @@ const en = {
   'listings.clear_filters': 'Clear all filters',
   'listings.previous': 'Previous',
   'listings.next': 'Next',
+  'listings.filter_properties': 'Filter Properties',
+  'listings.show_results': 'Show Results',
+
+  // Reviews
+  'reviews.title': 'Reviews',
+  'reviews.write': 'Write a Review',
+  'reviews.submit': 'Submit Review',
+  'reviews.your_rating': 'Your rating',
+  'reviews.your_review': 'Your review',
+  'reviews.share_experience': 'Share your experience',
+
+  // Comparison
+  'compare.title': 'Compare Properties',
+  'compare.not_enough': 'Not enough properties to compare',
+  'compare.need_two': 'You need at least 2 properties to use the comparison feature.',
+  'compare.clear_all': 'Clear All',
+  'compare.view_details': 'View Details',
+  'compare.best_price': 'Best price',
+  'compare.contact_agent': 'Contact an Agent',
+
+  // Chatbot
+  'chatbot.title': 'AI Property Assistant',
+  'chatbot.powered': 'Powered by TzDalali AI',
+  'chatbot.ask': 'Ask about properties...',
 }
 
 const zh: typeof en = {
   // Navigation
-  'nav.sale': '出售房产',
-  'nav.rent': '出租房产',
-  'nav.commercial': '商业地产',
+  'nav.sale': '住宿',
+  'nav.rent': '租房',
+  'nav.commercial': '商业',
   'nav.partners': '合作伙伴',
   'nav.how_it_works': '操作流程',
-  'nav.about': '关于我们',
+  'nav.about': '关于',
   'nav.sign_in': '登录',
   'nav.list_property': '发布房产',
 
   // Hero
   'hero.tagline': '您值得信赖的全球房产中介',
-  'hero.title_1': '在地球',
+  'hero.title_1': '寻找您的下一个住所',
   'hero.title_em': '任何地方',
-  'hero.title_2': '买卖房产。',
-  'hero.body': '法律保障，资金托管，全球每个国家均配备经认证的律师事务所和税务顾问。',
+  'hero.title_2': '在地球上。',
+  'hero.body': '在195个国家搜索房产，享受法律保障和托管保护',
 
   // Search widget
   'search.buy': '购买',
-  'search.rent': '短租',
+  'search.rent': '租房',
   'search.lease': '长租',
-  'search.country': '任意国家',
-  'search.region': '任意地区',
-  'search.district': '任意区县',
-  'search.keyword_ph': '房产类型、社区名称…',
+  'search.country': '任何国家',
+  'search.region': '任何地区',
+  'search.district': '任何区县',
+  'search.keyword_ph': '您要去哪里？',
   'search.button': '搜索',
 
   // Home sections
@@ -144,6 +171,9 @@ const zh: typeof en = {
   'home.nearby_title_loc': '{name}房产',
   'home.nearby_title_global': '最新上市',
   'home.view_all': '查看全部',
+  'home.recently_listed': '最新发布',
+  'home.popular_destinations': '热门目的地',
+  'home.why_book': '选择我们的理由',
 
   'home.process_label': '流程',
   'home.process_title': 'TzDalali如何运作',
@@ -194,6 +224,30 @@ const zh: typeof en = {
   'listings.clear_filters': '清除所有筛选',
   'listings.previous': '上一页',
   'listings.next': '下一页',
+  'listings.filter_properties': '筛选房产',
+  'listings.show_results': '显示结果',
+
+  // Reviews
+  'reviews.title': '评论',
+  'reviews.write': '撰写评论',
+  'reviews.submit': '提交评论',
+  'reviews.your_rating': '您的评分',
+  'reviews.your_review': '您的评论',
+  'reviews.share_experience': '分享您的体验',
+
+  // Comparison
+  'compare.title': '房产比较',
+  'compare.not_enough': '没有足够的房产进行比较',
+  'compare.need_two': '您需要至少2处房产才能使用比较功能。',
+  'compare.clear_all': '清除全部',
+  'compare.view_details': '查看详情',
+  'compare.best_price': '最低价',
+  'compare.contact_agent': '联系房产经纪',
+
+  // Chatbot
+  'chatbot.title': 'AI房产助手',
+  'chatbot.powered': '由 TzDalali AI 驱动',
+  'chatbot.ask': '询问房产...',
 }
 
 export const translations = { en, zh } as const

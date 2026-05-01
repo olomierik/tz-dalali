@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PropertyGrid } from '@/components/properties/PropertyGrid'
 import { PriceDisplay } from '@/components/common/PriceDisplay'
+import { PropertyReviews } from '@/components/properties/PropertyReviews'
 import { useProperty, useProperties, useSavedProperties, useSaveProperty } from '@/hooks/useProperties'
 import { useCreateTransaction } from '@/hooks/useTransactions'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -339,15 +340,27 @@ export default function PropertyDetail() {
             </div>
 
             <div className="text-xs text-muted-foreground text-center">
-              <p>Questions? <a href="mailto:support@tzdalali.com" className="text-gold hover:underline">support@tzdalali.com</a></p>
+              <p>Questions? <a href="mailto:support@tzdalali.com" className="text-booking-blue hover:underline">support@tzdalali.com</a></p>
             </div>
           </div>
         </div>
 
+        {/* Reviews Section */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <PropertyReviews propertyId={property.id} />
+        </div>
+
         {similarProps.length > 0 && (
-          <div className="mt-16">
-            <span className="inline-block text-xs uppercase tracking-[0.3em] text-gold mb-2">Similar Properties</span>
-            <h2 className="font-serif text-2xl text-primary mb-6">You may also like</h2>
+          <div className="mt-16 pt-8 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <span className="inline-block text-xs uppercase tracking-wider text-booking-blue mb-2 font-medium">Recommended</span>
+                <h2 className="font-serif text-2xl text-gray-900">You may also like</h2>
+              </div>
+              <Link to="/listings" className="text-sm font-medium text-booking-blue hover:underline">
+                View all →
+              </Link>
+            </div>
             <PropertyGrid properties={similarProps} loading={false} savedIds={savedIds} onSaveToggle={handleSave} />
           </div>
         )}

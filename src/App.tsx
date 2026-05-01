@@ -5,9 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { ComparisonProvider } from "@/contexts/ComparisonContext";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AIChatbot } from "@/components/common/AIChatbot";
+import { PropertyComparisonBar } from "@/components/properties/PropertyComparisonBar";
 
 // Public pages
 import Home from "./pages/Home";
@@ -19,6 +22,7 @@ import SoldRented from "./pages/SoldRented";
 import Auth from "./pages/Auth";
 import PropertyDetail from "./pages/PropertyDetail";
 import NotFound from "./pages/NotFound";
+import Compare from "./pages/Compare";
 
 // Buyer dashboard
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -57,6 +61,111 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppContent() {
+  return (
+    <>
+      <ComparisonProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/location" element={<Location />} />
+            <Route path="/listings" element={<Listings />} />
+            <Route path="/listings/:id" element={<PropertyDetail />} />
+            <Route path="/sold" element={<SoldRented />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/auth" element={<Auth />} />
+          </Route>
+
+          {/* Compare page (outside layout for full width) */}
+          <Route path="/compare" element={<Compare />} />
+
+          {/* Buyer dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute roles={['buyer', 'seller', 'law_firm', 'tax_consultant', 'admin']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="transactions" element={<MyTransactions />} />
+            <Route path="transactions/:id" element={<TransactionDetail />} />
+            <Route path="saved" element={<SavedProperties />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+
+          {/* Seller routes */}
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute roles={['seller', 'admin']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<SellerDashboard />} />
+            <Route path="listings" element={<SellerListings />} />
+            <Route path="listings/new" element={<NewListing />} />
+            <Route path="listings/:id/edit" element={<NewListing />} />
+            <Route path="transactions" element={<SellerTransactions />} />
+          </Route>
+
+          {/* Partner routes */}
+          <Route
+            path="/partner"
+            element={
+              <ProtectedRoute roles={['law_firm', 'tax_consultant', 'admin']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<PartnerDashboard />} />
+            <Route path="transactions" element={<PartnerTransactions />} />
+            <Route path="transactions/:id" element={<PartnerTransactionDetail />} />
+            <Route path="profile" element={<PartnerProfile />} />
+            <Route path="payouts" element={<PartnerPayouts />} />
+          </Route>
+
+          {/* Admin routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="listings" element={<AdminListings />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="partners" element={<AdminPartners />} />
+            <Route path="transactions" element={<AdminTransactions />} />
+          </Route>
+
+          {/* Legacy redirects */}
+          <Route path="/agents" element={<Navigate to="/location" replace />} />
+          <Route path="/partners" element={<Navigate to="/about" replace />} />
+          <Route path="/how-it-works" element={<Navigate to="/about" replace />} />
+          <Route path="/pricing" element={<Navigate to="/about" replace />} />
+          <Route path="/terms" element={<Navigate to="/" replace />} />
+          <Route path="/privacy" element={<Navigate to="/" replace />} />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        
+        {/* Global components */}
+        <AIChatbot />
+        <PropertyComparisonBar />
+      </ComparisonProvider>
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -65,95 +174,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/location" element={<Location />} />
-              <Route path="/listings" element={<Listings />} />
-              <Route path="/listings/:id" element={<PropertyDetail />} />
-              <Route path="/sold" element={<SoldRented />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
-            </Route>
-
-            {/* Buyer dashboard */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute roles={['buyer', 'seller', 'law_firm', 'tax_consultant', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardHome />} />
-              <Route path="transactions" element={<MyTransactions />} />
-              <Route path="transactions/:id" element={<TransactionDetail />} />
-              <Route path="saved" element={<SavedProperties />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
-
-            {/* Seller routes */}
-            <Route
-              path="/seller"
-              element={
-                <ProtectedRoute roles={['seller', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<SellerDashboard />} />
-              <Route path="listings" element={<SellerListings />} />
-              <Route path="listings/new" element={<NewListing />} />
-              <Route path="listings/:id/edit" element={<NewListing />} />
-              <Route path="transactions" element={<SellerTransactions />} />
-            </Route>
-
-            {/* Partner routes */}
-            <Route
-              path="/partner"
-              element={
-                <ProtectedRoute roles={['law_firm', 'tax_consultant', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<PartnerDashboard />} />
-              <Route path="transactions" element={<PartnerTransactions />} />
-              <Route path="transactions/:id" element={<PartnerTransactionDetail />} />
-              <Route path="profile" element={<PartnerProfile />} />
-              <Route path="payouts" element={<PartnerPayouts />} />
-            </Route>
-
-            {/* Admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="listings" element={<AdminListings />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="partners" element={<AdminPartners />} />
-              <Route path="transactions" element={<AdminTransactions />} />
-            </Route>
-
-            {/* Legacy redirects */}
-            <Route path="/agents" element={<Navigate to="/location" replace />} />
-            <Route path="/partners" element={<Navigate to="/about" replace />} />
-            <Route path="/how-it-works" element={<Navigate to="/about" replace />} />
-            <Route path="/pricing" element={<Navigate to="/about" replace />} />
-            <Route path="/terms" element={<Navigate to="/" replace />} />
-            <Route path="/privacy" element={<Navigate to="/" replace />} />
-
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
