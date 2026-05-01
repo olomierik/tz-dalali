@@ -8,6 +8,8 @@ import { ComparisonProvider } from "@/contexts/ComparisonContext";
 import Index from "./pages/Index";
 import RealEstatePage from "./pages/RealEstate";
 import CarsPage from "./pages/Cars";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
                 <Route path="/cars" element={<CarsPage />} />
                 <Route path="/search" element={<div>Unified Search</div>} />
                 <Route path="/dashboard" element={<div>Dashboard</div>} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
