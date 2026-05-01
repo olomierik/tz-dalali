@@ -144,7 +144,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   )
 }
 
-export function DashboardLayout() {
+interface DashboardLayoutProps {
+  children?: React.ReactNode;
+}
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { profile, signOut } = useAuthContext()
   const navigate = useNavigate()
@@ -216,7 +220,7 @@ export function DashboardLayout() {
         </header>
 
         <main className="flex-1 p-4 md:p-6 lg:p-8">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>
