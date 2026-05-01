@@ -191,6 +191,46 @@ export function useTransactionSteps(transactionId: string | undefined) {
   })
 }
 
+// ─── useTransactions (combined buyer/seller) ────────────────────────────────
+
+export interface TransactionFilters {
+  buyer_id?: string
+  seller_id?: string
+}
+
+export function useTransactions(filters: TransactionFilters = {}) {
+  const { user } = useAuthContext()
+
+  return useQuery({
+    queryKey: transactionKeys.all,
+    enabled: !!user,
+    queryFn: async (): Promise<Transaction[]> => {
+      if (!user) return []
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from('transactions')
+        .select('*, properties(id, title, featured_image, deal_type)')
+        .order('created_at', { ascending: false })
+
+      if (error) throw new Error(error.message)
+      
+      let transactions = (data ?? []) as Transaction[]
+      
+      // Filter by buyer_id or seller_id
+      if (filters.buyer_id) {
+        transactions = transactions.filter(t => t.buyer_id === filters.buyer_id)
+      }
+      if (filters.seller_id) {
+        transactions = transactions.filter(t => t.seller_id === filters.seller_id)
+      }
+      
+      return transactions
+    },
+    staleTime: STALE_TIME,
+  })
+}
+
 // ─── useCreateTransaction ────────────────────────────────────────────────────
 
 export function useCreateTransaction() {

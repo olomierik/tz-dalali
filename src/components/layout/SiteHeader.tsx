@@ -22,7 +22,9 @@ export const SiteHeader = () => {
     { to: "/", label: t('nav.home'), end: true },
     { to: "/real-estate", label: t('nav.real_estate'), icon: <Home className="h-4 w-4" /> },
     { to: "/cars", label: t('nav.cars'), icon: <Car className="h-4 w-4" /> },
-    { to: "/search", label: t('nav.search_in_header') || 'Search', icon: <Search className="h-4 w-4" /> },
+    { to: "/ai-search", label: "AI Search", icon: <Search className="h-4 w-4" /> },
+    { to: "/about", label: t('nav.about'), icon: <Globe className="h-4 w-4" /> },
+    { to: "/contact", label: "Contact", icon: <User className="h-4 w-4" /> },
   ];
 
   return (
