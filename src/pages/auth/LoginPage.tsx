@@ -2,172 +2,190 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
-import { Shield, Phone, Mail, ChevronRight, ChevronLeft, Info } from 'lucide-react'
+import { Shield, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { cn } from '@/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+type Mode = 'signin' | 'signup'
 
 export default function LoginPage() {
   const { t } = useTranslation()
-  const { sendOtp, verifyOtp, useInviteToken } = useAuth()
+  const { signIn, signUp, resetPassword } = useAuth()
   const navigate = useNavigate()
 
-  const [mode, setMode] = useState<'phone' | 'email'>('phone')
-  const [step, setStep] = useState<'contact' | 'otp' | 'token'>('contact')
-  const [contact, setContact] = useState('')
-  const [otp, setOtp] = useState('')
-  const [token, setToken] = useState('')
+  const [mode, setMode] = useState<Mode>('signin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [forgotMode, setForgotMode] = useState(false)
 
-  const handleSendOtp = async () => {
-    if (!contact.trim()) return
-    setLoading(true)
-    setError(null)
-    const { error: err } = await sendOtp(contact.trim(), mode === 'email')
-    setLoading(false)
-    if (err) { setError(err); return }
-    setStep('otp')
+  const resetFields = () => {
+    setEmail(''); setPassword(''); setConfirmPassword(''); setFullName('')
+    setError(null); setSuccess(null)
   }
 
-  const handleVerify = async () => {
-    if (!otp.trim()) return
-    setLoading(true)
-    setError(null)
-    const { error: err } = await verifyOtp(contact.trim(), otp.trim(), mode === 'email')
+  const handleModeChange = (v: string) => {
+    setMode(v as Mode); setForgotMode(false); resetFields()
+  }
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) return
+    setLoading(true); setError(null)
+    const { error: err } = await signIn(email.trim(), password)
     setLoading(false)
     if (err) { setError(err); return }
     navigate('/dashboard', { replace: true })
   }
 
-  const handleUseToken = async () => {
-    if (!token.trim()) return
-    setLoading(true)
-    setError(null)
-    const { error: err } = await useInviteToken(token.trim())
+  const handleSignUp = async () => {
+    if (!fullName.trim() || !email.trim() || !password) return
+    if (password !== confirmPassword) { setError(t('auth.passwordMismatch')); return }
+    if (password.length < 6) { setError(t('auth.passwordTooShort')); return }
+    setLoading(true); setError(null)
+    const { error: err } = await signUp(email.trim(), password, fullName.trim())
     setLoading(false)
     if (err) { setError(err); return }
-    setStep('contact')
-    setError(null)
+    setSuccess(t('auth.signUpSuccess'))
+  }
+
+  const handleReset = async () => {
+    if (!email.trim()) return
+    setLoading(true); setError(null)
+    const { error: err } = await resetPassword(email.trim())
+    setLoading(false)
+    if (err) { setError(err); return }
+    setSuccess(t('auth.resetSent', { email: email.trim() }))
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 to-blue-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-400/20 border border-blue-400/40 mb-4">
             <Shield className="h-8 w-8 text-blue-300" />
           </div>
           <h1 className="text-2xl font-bold text-white">{t('auth.welcome')}</h1>
-          <p className="text-blue-300 text-sm mt-1">{t('auth.subtitle')}</p>
+          <p className="text-blue-300 text-sm mt-1">Elohim Education Centre</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 space-y-5">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+        <div className="bg-white rounded-2xl shadow-xl p-6 space-y-4">
+
+          {!forgotMode && (
+            <Tabs value={mode} onValueChange={handleModeChange}>
+              <TabsList className="w-full">
+                <TabsTrigger value="signin" className="flex-1">{t('auth.signIn')}</TabsTrigger>
+                <TabsTrigger value="signup" className="flex-1">{t('auth.signUp')}</TabsTrigger>
+              </TabsList>
+            </Tabs>
           )}
 
-          {step === 'contact' && (
-            <>
-              <Tabs value={mode} onValueChange={v => setMode(v as 'phone' | 'email')}>
-                <TabsList className="w-full">
-                  <TabsTrigger value="phone" className="flex-1 gap-2">
-                    <Phone className="h-4 w-4" /> {t('auth.phone')}
-                  </TabsTrigger>
-                  <TabsTrigger value="email" className="flex-1 gap-2">
-                    <Mail className="h-4 w-4" /> {t('auth.email')}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+          {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+          {success && <Alert className="bg-green-50 border-green-200"><AlertDescription className="text-green-800">{success}</AlertDescription></Alert>}
 
-              <div className="space-y-2">
-                <Label>{mode === 'phone' ? t('auth.phone') : t('auth.email')}</Label>
+          {/* ── Forgot password ── */}
+          {forgotMode ? (
+            <>
+              <p className="text-sm text-gray-600">{t('auth.resetInstructions')}</p>
+              <div className="space-y-1">
+                <Label htmlFor="email">{t('auth.email')}</Label>
                 <Input
-                  type={mode === 'phone' ? 'tel' : 'email'}
-                  placeholder={mode === 'phone' ? t('auth.phonePlaceholder') : t('auth.emailPlaceholder')}
-                  value={contact}
-                  onChange={e => setContact(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSendOtp()}
-                  className="h-12 text-base"
+                  id="email"
+                  type="email"
+                  placeholder={t('auth.emailPlaceholder')}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleReset()}
+                  className="h-11"
                 />
               </div>
-
-              <Button onClick={handleSendOtp} disabled={!contact.trim() || loading} className="w-full h-12 bg-blue-700 hover:bg-blue-800">
-                {loading ? t('common.loading') : t('auth.sendOtp')}
-                <ChevronRight className="h-4 w-4 ml-1" />
+              <Button onClick={handleReset} disabled={!email.trim() || loading} className="w-full h-11 bg-blue-700 hover:bg-blue-800">
+                {loading ? t('common.loading') : t('auth.sendReset')}
               </Button>
-
-              <div className="border-t pt-4">
-                <button
-                  onClick={() => setStep('token')}
-                  className="text-sm text-blue-600 hover:underline w-full text-center"
-                >
-                  {t('auth.inviteToken')}
-                </button>
-              </div>
-
-              <Alert className="bg-blue-50 border-blue-200">
-                <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-700 text-xs">
-                  {t('auth.noPublicSignup')}
-                </AlertDescription>
-              </Alert>
-            </>
-          )}
-
-          {step === 'otp' && (
-            <>
-              <p className="text-sm text-gray-600 text-center">
-                {t('auth.otpSent', { contact })}
-              </p>
-              <div className="space-y-2">
-                <Label>{t('auth.enterOtp')}</Label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder={t('auth.otpPlaceholder')}
-                  value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-                  onKeyDown={e => e.key === 'Enter' && handleVerify()}
-                  className={cn('h-14 text-center text-2xl tracking-[0.5em] font-mono')}
-                />
-              </div>
-              <Button onClick={handleVerify} disabled={otp.length < 6 || loading} className="w-full h-12 bg-blue-700 hover:bg-blue-800">
-                {loading ? t('common.loading') : t('auth.verify')}
-              </Button>
-              <button onClick={() => { setStep('contact'); setOtp(''); setError(null) }} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mx-auto">
-                <ChevronLeft className="h-4 w-4" /> {t('auth.back')}
+              <button onClick={() => { setForgotMode(false); resetFields() }} className="text-sm text-gray-500 hover:text-gray-700 w-full text-center">
+                {t('auth.backToSignIn')}
               </button>
             </>
-          )}
-
-          {step === 'token' && (
+          ) : mode === 'signin' ? (
+            /* ── Sign In ── */
             <>
-              <p className="text-sm text-gray-600 text-center">{t('auth.enterInviteToken')}</p>
-              <div className="space-y-2">
-                <Label>{t('auth.inviteToken')}</Label>
-                <Input
-                  type="text"
-                  placeholder="ELOHIM-XXXX-XXXX"
-                  value={token}
-                  onChange={e => setToken(e.target.value.toUpperCase())}
-                  className="h-12 font-mono text-center tracking-wider"
-                />
+              <div className="space-y-1">
+                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Input id="email" type="email" placeholder={t('auth.emailPlaceholder')} value={email}
+                  onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSignIn()}
+                  className="h-11" autoComplete="email" />
               </div>
-              <Button onClick={handleUseToken} disabled={!token.trim() || loading} className="w-full h-12 bg-blue-700 hover:bg-blue-800">
-                {loading ? t('common.loading') : t('auth.useToken')}
+              <div className="space-y-1">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <div className="relative">
+                  <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSignIn()}
+                    className="h-11 pr-10" autoComplete="current-password" />
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <Button onClick={handleSignIn} disabled={!email.trim() || !password || loading}
+                className="w-full h-11 bg-blue-700 hover:bg-blue-800">
+                {loading ? t('common.loading') : t('auth.signIn')}
               </Button>
-              <button onClick={() => { setStep('contact'); setToken(''); setError(null) }} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 mx-auto">
-                <ChevronLeft className="h-4 w-4" /> {t('auth.back')}
+              <button onClick={() => { setForgotMode(true); setError(null); setSuccess(null) }}
+                className="text-sm text-blue-600 hover:underline w-full text-center">
+                {t('auth.forgotPassword')}
               </button>
+            </>
+          ) : (
+            /* ── Sign Up ── */
+            <>
+              <div className="space-y-1">
+                <Label htmlFor="fullName">{t('auth.fullName')}</Label>
+                <Input id="fullName" type="text" placeholder={t('auth.fullNamePlaceholder')}
+                  value={fullName} onChange={e => setFullName(e.target.value)}
+                  className="h-11" autoComplete="name" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="email-signup">{t('auth.email')}</Label>
+                <Input id="email-signup" type="email" placeholder={t('auth.emailPlaceholder')}
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  className="h-11" autoComplete="email" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="password-signup">{t('auth.password')}</Label>
+                <div className="relative">
+                  <Input id="password-signup" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    className="h-11 pr-10" autoComplete="new-password" />
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
+                <Input id="confirm-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                  value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSignUp()}
+                  className="h-11" autoComplete="new-password" />
+              </div>
+              <Button onClick={handleSignUp}
+                disabled={!fullName.trim() || !email.trim() || !password || !confirmPassword || loading}
+                className="w-full h-11 bg-blue-700 hover:bg-blue-800">
+                {loading ? t('common.loading') : t('auth.createAccount')}
+              </Button>
             </>
           )}
         </div>
