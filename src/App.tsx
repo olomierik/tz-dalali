@@ -1,165 +1,124 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { Toaster } from '@/components/ui/toaster'
+import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { AppShell } from '@/components/layout/AppShell'
 
-// Public pages
-import Home from "./pages/Home";
-import Listings from "./pages/Listings";
-import Partners from "./pages/Partners";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import HowItWorks from "./pages/HowItWorks";
-import Pricing from "./pages/Pricing";
-import Auth from "./pages/Auth";
-import PropertyDetail from "./pages/PropertyDetail";
-import NotFound from "./pages/NotFound";
-import Terms from "./pages/legal/Terms";
-import Privacy from "./pages/legal/Privacy";
-
-// Buyer dashboard
-import DashboardHome from "./pages/dashboard/DashboardHome";
-import MyTransactions from "./pages/dashboard/MyTransactions";
-import TransactionDetail from "./pages/dashboard/TransactionDetail";
-import SavedProperties from "./pages/dashboard/SavedProperties";
-import Notifications from "./pages/dashboard/Notifications";
-import Profile from "./pages/dashboard/Profile";
-
-// Seller pages
-import SellerDashboard from "./pages/seller/SellerDashboard";
-import SellerListings from "./pages/seller/SellerListings";
-import NewListing from "./pages/seller/NewListing";
-import SellerTransactions from "./pages/seller/SellerTransactions";
-
-// Partner pages
-import PartnerDashboard from "./pages/partner/PartnerDashboard";
-import PartnerTransactions from "./pages/partner/PartnerTransactions";
-import PartnerTransactionDetail from "./pages/partner/PartnerTransactionDetail";
-import PartnerProfile from "./pages/partner/PartnerProfile";
-import PartnerPayouts from "./pages/partner/PartnerPayouts";
-
-// Admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminListings from "./pages/admin/AdminListings";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminPartners from "./pages/admin/AdminPartners";
-import AdminTransactions from "./pages/admin/AdminTransactions";
+import LoginPage from '@/pages/auth/LoginPage'
+import ConsentPage from '@/pages/auth/ConsentPage'
+import DashboardPage from '@/pages/dashboard/DashboardPage'
+import AnnouncementsPage from '@/pages/announcements/AnnouncementsPage'
+import AssignmentsPage from '@/pages/assignments/AssignmentsPage'
+import AttendancePage from '@/pages/attendance/AttendancePage'
+import MessagesPage from '@/pages/messages/MessagesPage'
+import CalendarPage from '@/pages/calendar/CalendarPage'
+import StudentsPage from '@/pages/students/StudentsPage'
+import ClassesPage from '@/pages/classes/ClassesPage'
+import AuditLogPage from '@/pages/admin/AuditLogPage'
+import SettingsPage from '@/pages/admin/SettingsPage'
+import type { UserRole } from '@/types'
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+})
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: UserRole[] }) {
+  const { user, profile, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-700 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/login" replace />
+
+  if (profile?.consent_status === 'pending_consent' && profile.role === 'student') {
+    return <Navigate to="/consent" replace />
+  }
+
+  if (roles && profile && !roles.includes(profile.role as UserRole)) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return <>{children}</>
+}
+
+function AppRoutes() {
+  const { user, profile } = useAuth()
+
+  if (user && profile?.consent_status === 'pending_consent' && profile.role === 'student') {
+    return (
+      <Routes>
+        <Route path="/consent" element={<ConsentPage />} />
+        <Route path="*" element={<Navigate to="/consent" replace />} />
+      </Routes>
+    )
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/consent" element={<ConsentPage />} />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="announcements" element={<AnnouncementsPage />} />
+        <Route path="assignments" element={<AssignmentsPage />} />
+        <Route path="attendance" element={<AttendancePage />} />
+        <Route path="messages" element={<MessagesPage />} />
+        <Route path="calendar" element={<CalendarPage />} />
+        <Route
+          path="students"
+          element={
+            <ProtectedRoute roles={['super_admin', 'school_admin', 'teacher']}>
+              <StudentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="classes"
+          element={
+            <ProtectedRoute roles={['super_admin', 'school_admin', 'teacher']}>
+              <ClassesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/audit-log"
+          element={
+            <ProtectedRoute roles={['super_admin', 'school_admin']}>
+              <AuditLogPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="admin/settings" element={<SettingsPage />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+    </Routes>
+  )
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/listings" element={<Listings />} />
-              <Route path="/listings/:id" element={<PropertyDetail />} />
-              <Route path="/partners" element={<Partners />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-            </Route>
-
-            {/* Buyer dashboard */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute roles={['buyer', 'seller', 'law_firm', 'tax_consultant', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardHome />} />
-              <Route path="transactions" element={<MyTransactions />} />
-              <Route path="transactions/:id" element={<TransactionDetail />} />
-              <Route path="saved" element={<SavedProperties />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
-
-            {/* Seller routes */}
-            <Route
-              path="/seller"
-              element={
-                <ProtectedRoute roles={['seller', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<SellerDashboard />} />
-              <Route path="listings" element={<SellerListings />} />
-              <Route path="listings/new" element={<NewListing />} />
-              <Route path="listings/:id/edit" element={<NewListing />} />
-              <Route path="transactions" element={<SellerTransactions />} />
-            </Route>
-
-            {/* Partner routes */}
-            <Route
-              path="/partner"
-              element={
-                <ProtectedRoute roles={['law_firm', 'tax_consultant', 'admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<PartnerDashboard />} />
-              <Route path="transactions" element={<PartnerTransactions />} />
-              <Route path="transactions/:id" element={<PartnerTransactionDetail />} />
-              <Route path="profile" element={<PartnerProfile />} />
-              <Route path="payouts" element={<PartnerPayouts />} />
-            </Route>
-
-            {/* Admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="listings" element={<AdminListings />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="partners" element={<AdminPartners />} />
-              <Route path="transactions" element={<AdminTransactions />} />
-            </Route>
-
-            {/* Legacy redirects */}
-            <Route path="/agents" element={<Navigate to="/partners" replace />} />
-
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Toaster />
+          <AppRoutes />
         </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+      </AuthProvider>
+    </QueryClientProvider>
+  )
+}
