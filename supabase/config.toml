@@ -1,1 +1,22 @@
 project_id = "grlxfpvyleurcakchsxu"
+
+[auth]
+site_url = "https://grlxfpvyleurcakchsxu.supabase.co"
+additional_redirect_urls = []
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+
+[auth.email]
+# Closed network — no self-registration
+enable_signup = false
+enable_confirmations = false
+max_frequency = "1m0s"
+
+[auth.email.template.magic_link]
+subject = "Your ShuleConnect login code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.sms]
+enable_signup = false
+max_frequency = "1m0s"

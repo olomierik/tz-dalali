@@ -76,20 +76,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchProfile])
 
   const sendOtp = async (contact: string, isEmail: boolean): Promise<{ error: string | null }> => {
-    const params = isEmail
-      ? { email: contact }
-      : { phone: contact }
-
-    const { error } = await (supabase.auth as any).signInWithOtp(params)
+    const { error } = await supabase.auth.signInWithOtp(
+      isEmail
+        ? { email: contact, options: { shouldCreateUser: false } }
+        : { phone: contact, options: { shouldCreateUser: false } }
+    )
     return { error: error?.message ?? null }
   }
 
   const verifyOtp = async (contact: string, token: string, isEmail: boolean): Promise<{ error: string | null }> => {
-    const params = isEmail
-      ? { email: contact, token, type: 'email' as const }
-      : { phone: contact, token, type: 'sms' as const }
-
-    const { error } = await supabase.auth.verifyOtp(params)
+    const { error } = await supabase.auth.verifyOtp(
+      isEmail
+        ? { email: contact, token, type: 'email' as const }
+        : { phone: contact, token, type: 'sms' as const }
+    )
     return { error: error?.message ?? null }
   }
 
