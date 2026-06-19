@@ -12,6 +12,7 @@ interface AuthContextType {
   schoolId: string | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>
   resetPassword: (email: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -79,6 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null }
   }
 
+  const signUp = async (email: string, password: string, fullName: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    })
+    return { error: error?.message ?? null }
+  }
+
   const resetPassword = async (email: string): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -119,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: profile?.role ?? null,
       schoolId: profile?.school_id ?? null,
       loading,
-      signIn, resetPassword,
+      signIn, signUp, resetPassword,
       signOut, refreshProfile,
       hasRole, canMessage,
     }}>

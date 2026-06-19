@@ -22,8 +22,20 @@
     "email": "Barua Pepe",
     "emailPlaceholder": "mwalimu@shule.ac.tz",
     "password": "Nenosiri",
+    "confirmPassword": "Thibitisha Nenosiri",
+    "fullName": "Jina Kamili",
+    "fullNamePlaceholder": "mf. Amina Juma",
     "signIn": "Ingia",
-    "forgotPassword": "Umesahau nenosiri?"
+    "signUp": "Jisajili",
+    "createAccount": "Fungua Akaunti",
+    "forgotPassword": "Umesahau nenosiri?",
+    "resetInstructions": "Weka barua pepe yako na tutakutumia kiungo cha kubadilisha nenosiri.",
+    "sendReset": "Tuma Kiungo",
+    "backToSignIn": "Rudi kuingia",
+    "resetSent": "Kiungo kimetumwa kwa {{email}}. Angalia kikasha chako.",
+    "signUpSuccess": "Akaunti imefunguliwa! Angalia barua pepe yako kuthibitisha kabla ya kuingia.",
+    "passwordMismatch": "Manenosiri hayalingani.",
+    "passwordTooShort": "Nenosiri liwe na angalau herufi 6."
   },
   "consent": {
     "title": "Ridhaa ya Mzazi Inahitajika",

@@ -22,8 +22,20 @@
     "email": "Email Address",
     "emailPlaceholder": "teacher@school.ac.tz",
     "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "e.g. Amina Juma",
     "signIn": "Sign In",
-    "forgotPassword": "Forgot password?"
+    "signUp": "Sign Up",
+    "createAccount": "Create Account",
+    "forgotPassword": "Forgot password?",
+    "resetInstructions": "Enter your email and we'll send a password reset link.",
+    "sendReset": "Send Reset Link",
+    "backToSignIn": "Back to sign in",
+    "resetSent": "Reset link sent to {{email}}. Check your inbox.",
+    "signUpSuccess": "Account created! Check your email to confirm before signing in.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 6 characters."
   },
   "consent": {
     "title": "Parental Consent Required",
