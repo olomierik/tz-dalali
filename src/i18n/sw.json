@@ -19,20 +19,11 @@
   "auth": {
     "welcome": "Karibu ShuleConnect",
     "subtitle": "Elohim Education Centre — Tanga, Tanzania",
-    "phone": "Nambari ya Simu",
     "email": "Barua Pepe",
-    "phonePlaceholder": "+255 700 000 000",
     "emailPlaceholder": "mwalimu@shule.ac.tz",
-    "sendOtp": "Tuma Nambari ya Uthibitishaji",
-    "enterOtp": "Weka Nambari ya Uthibitishaji",
-    "otpSent": "Nambari imetumwa kwa {{contact}}",
-    "otpPlaceholder": "000000",
-    "verify": "Thibitisha & Ingia",
-    "back": "Rudi",
-    "noPublicSignup": "Akaunti zinatolewa na shule yako. Wasiliana na msimamizi wako ukihitaji ufikiaji.",
-    "inviteToken": "Una msimbo wa mwaliko?",
-    "enterInviteToken": "Weka msimbo wa mwaliko",
-    "useToken": "Tumia Msimbo wa Mwaliko"
+    "password": "Nenosiri",
+    "signIn": "Ingia",
+    "forgotPassword": "Umesahau nenosiri?"
   },
   "consent": {
     "title": "Ridhaa ya Mzazi Inahitajika",

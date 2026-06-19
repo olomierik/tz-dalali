@@ -11,9 +11,8 @@ interface AuthContextType {
   role: UserRole | null
   schoolId: string | null
   loading: boolean
-  sendOtp: (contact: string, isEmail: boolean) => Promise<{ error: string | null }>
-  verifyOtp: (contact: string, token: string, isEmail: boolean) => Promise<{ error: string | null }>
-  useInviteToken: (token: string) => Promise<{ error: string | null }>
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  resetPassword: (email: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
   hasRole: (...roles: UserRole[]) => boolean
@@ -75,35 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [fetchProfile])
 
-  const sendOtp = async (contact: string, isEmail: boolean): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithOtp(
-      isEmail
-        ? { email: contact, options: { shouldCreateUser: false } }
-        : { phone: contact, options: { shouldCreateUser: false } }
-    )
+  const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     return { error: error?.message ?? null }
   }
 
-  const verifyOtp = async (contact: string, token: string, isEmail: boolean): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.verifyOtp(
-      isEmail
-        ? { email: contact, token, type: 'email' as const }
-        : { phone: contact, token, type: 'sms' as const }
-    )
+  const resetPassword = async (email: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
     return { error: error?.message ?? null }
-  }
-
-  const useInviteToken = async (token: string): Promise<{ error: string | null }> => {
-    const { data, error } = await supabase
-      .from('invite_tokens')
-      .select('*')
-      .eq('token', token)
-      .is('used_at', null)
-      .gt('expires_at', new Date().toISOString())
-      .maybeSingle()
-
-    if (error || !data) return { error: 'Invalid or expired invite code.' }
-    return { error: null }
   }
 
   const signOut = async () => {
@@ -121,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!profile) return false
     const myRole = profile.role
 
-    // super_admin and school_admin can message anyone
     if (myRole === 'super_admin' || myRole === 'school_admin') return true
 
     const allowedPairs: [UserRole, UserRole][] = [
@@ -140,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: profile?.role ?? null,
       schoolId: profile?.school_id ?? null,
       loading,
-      sendOtp, verifyOtp, useInviteToken,
+      signIn, resetPassword,
       signOut, refreshProfile,
       hasRole, canMessage,
     }}>

@@ -19,20 +19,11 @@
   "auth": {
     "welcome": "Welcome to ShuleConnect",
     "subtitle": "Elohim Education Centre — Tanga, Tanzania",
-    "phone": "Phone Number",
     "email": "Email Address",
-    "phonePlaceholder": "+255 700 000 000",
     "emailPlaceholder": "teacher@school.ac.tz",
-    "sendOtp": "Send OTP",
-    "enterOtp": "Enter OTP",
-    "otpSent": "A code was sent to {{contact}}",
-    "otpPlaceholder": "000000",
-    "verify": "Verify & Sign In",
-    "back": "Back",
-    "noPublicSignup": "Accounts are provisioned by your school. Contact your administrator if you need access.",
-    "inviteToken": "Have an invite code?",
-    "enterInviteToken": "Enter invite code",
-    "useToken": "Use Invite Code"
+    "password": "Password",
+    "signIn": "Sign In",
+    "forgotPassword": "Forgot password?"
   },
   "consent": {
     "title": "Parental Consent Required",
