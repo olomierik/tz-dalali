@@ -1,214 +1,156 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
-import { User } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { type User, type Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
-
-interface UserProfile {
-  id: string
-  email: string
-  full_name: string | null
-  display_name: string | null
-  phone: string | null
-  avatar_url: string | null
-  role: string
-  preferred_language: string
-  preferred_currency: string
-  id_verification_status: string
-  country_id: string | null
-  region_id: string | null
-  district_id: string | null
-  total_deals?: number | null
-  total_spent?: number | null
-}
+import type { Profile, UserRole } from '@/types'
+import i18n from '@/i18n'
 
 interface AuthContextType {
   user: User | null
-  profile: UserProfile | null
-  role: string | null
+  session: Session | null
+  profile: Profile | null
+  role: UserRole | null
+  schoolId: string | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: string | null; role: string | null }>
-  signUp: (email: string, password: string, fullName: string, role?: string) => Promise<{ error: string | null }>
+  sendOtp: (contact: string, isEmail: boolean) => Promise<{ error: string | null }>
+  verifyOtp: (contact: string, token: string, isEmail: boolean) => Promise<{ error: string | null }>
+  useInviteToken: (token: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<{ error: string | null }>
   refreshProfile: () => Promise<void>
+  hasRole: (...roles: UserRole[]) => boolean
+  canMessage: (targetRole: UserRole) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-function mapSupabaseError(message: string): string {
-  if (message.includes('Invalid login credentials')) return 'Invalid email or password. Please try again.'
-  if (message.includes('Email not confirmed')) return 'Please verify your email address before signing in.'
-  if (message.includes('User already registered')) return 'An account with this email already exists.'
-  if (message.includes('Password should be at least')) return 'Password must be at least 6 characters long.'
-  if (message.includes('Unable to validate email')) return 'Please enter a valid email address.'
-  if (message.includes('Email rate limit exceeded')) return 'Too many attempts. Please wait a few minutes and try again.'
-  if (message.includes('over_email_send_rate_limit')) return 'Too many emails sent. Please wait a few minutes and try again.'
-  return message
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, email, full_name, display_name, phone, avatar_url, role, preferred_language, preferred_currency, id_verification_status, country_id, region_id, district_id')
-        .eq('id', userId)
-        .maybeSingle()
-
-      if (error) {
-        console.error('[AuthContext] fetchProfile error:', error.message)
-        return null
-      }
-      return data as UserProfile | null
-    } catch (err) {
-      console.error('[AuthContext] fetchProfile unexpected error:', err)
-      return null
-    }
+  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle()
+    return data as Profile | null
   }, [])
 
   const refreshProfile = useCallback(async () => {
     if (!user) return
-    const data = await fetchProfile(user.id)
-    setProfile(data)
+    const p = await fetchProfile(user.id)
+    setProfile(p)
+    if (p?.language_pref) i18n.changeLanguage(p.language_pref)
   }, [user, fetchProfile])
 
   useEffect(() => {
-    let mounted = true
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s)
+      setUser(s?.user ?? null)
+      if (s?.user) {
+        fetchProfile(s.user.id).then(p => {
+          setProfile(p)
+          if (p?.language_pref) i18n.changeLanguage(p.language_pref)
+          setLoading(false)
+        })
+      } else {
+        setLoading(false)
+      }
+    })
 
-    const syncAuthState = (currentUser: User | null) => {
-      if (!mounted) return
-
-      setUser(currentUser)
-      setLoading(false)
-
-      if (!currentUser) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+      setUser(s?.user ?? null)
+      if (s?.user) {
+        fetchProfile(s.user.id).then(p => {
+          setProfile(p)
+          if (p?.language_pref) i18n.changeLanguage(p.language_pref)
+        })
+      } else {
         setProfile(null)
-        return
       }
-
-      void fetchProfile(currentUser.id).then((data) => {
-        if (mounted) setProfile(data)
-      })
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      syncAuthState(session?.user ?? null)
     })
 
-    void supabase.auth.getSession().then(({ data: { session } }) => {
-      syncAuthState(session?.user ?? null)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [fetchProfile])
 
-  const signIn = useCallback(async (email: string, password: string): Promise<{ error: string | null; role: string | null }> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+  const sendOtp = async (contact: string, isEmail: boolean): Promise<{ error: string | null }> => {
+    const params = isEmail
+      ? { email: contact }
+      : { phone: contact }
 
-      if (error) {
-        return { error: mapSupabaseError(error.message), role: null }
-      }
+    const { error } = await (supabase.auth as any).signInWithOtp(params)
+    return { error: error?.message ?? null }
+  }
 
-      if (data.user) {
-        // Fire-and-forget: update last_login without blocking the sign-in flow.
-        supabase
-          .from('users')
-          .update({ last_login: new Date().toISOString() })
-          .eq('id', data.user.id)
-          .then(({ error: updateError }) => {
-            if (updateError) {
-              console.warn('[AuthContext] Failed to update last_login:', updateError.message)
-            }
-          })
+  const verifyOtp = async (contact: string, token: string, isEmail: boolean): Promise<{ error: string | null }> => {
+    const params = isEmail
+      ? { email: contact, token, type: 'email' as const }
+      : { phone: contact, token, type: 'sms' as const }
 
-        const profileData = await fetchProfile(data.user.id)
-        setProfile(profileData)
-        return { error: null, role: profileData?.role ?? null }
-      }
+    const { error } = await supabase.auth.verifyOtp(params)
+    return { error: error?.message ?? null }
+  }
 
-      return { error: null, role: null }
-    } catch (err) {
-      console.error('[AuthContext] signIn unexpected error:', err)
-      return { error: 'An unexpected error occurred. Please try again.', role: null }
-    }
-  }, [fetchProfile])
+  const useInviteToken = async (token: string): Promise<{ error: string | null }> => {
+    const { data, error } = await supabase
+      .from('invite_tokens')
+      .select('*')
+      .eq('token', token)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle()
 
-  const signUp = useCallback(async (
-    email: string,
-    password: string,
-    fullName: string,
-    role: string = 'buyer',
-  ): Promise<{ error: string | null }> => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-            role,
-          },
-        },
-      })
+    if (error || !data) return { error: 'Invalid or expired invite code.' }
+    return { error: null }
+  }
 
-      if (error) {
-        return { error: mapSupabaseError(error.message) }
-      }
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setSession(null)
+    setProfile(null)
+  }
 
-      return { error: null }
-    } catch (err) {
-      console.error('[AuthContext] signUp unexpected error:', err)
-      return { error: 'An unexpected error occurred. Please try again.' }
-    }
-  }, [])
+  const hasRole = (...roles: UserRole[]): boolean => {
+    return !!profile && roles.includes(profile.role)
+  }
 
-  const signOut = useCallback(async () => {
-    try {
-      await supabase.auth.signOut()
-    } catch (err) {
-      console.error('[AuthContext] signOut error:', err)
-    } finally {
-      setUser(null)
-      setProfile(null)
-    }
-  }, [])
+  const canMessage = (targetRole: UserRole): boolean => {
+    if (!profile) return false
+    const myRole = profile.role
 
-  const resetPassword = useCallback(async (email: string): Promise<{ error: string | null }> => {
-    try {
-      const redirectTo = `${window.location.origin}/auth?tab=reset-confirm`
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+    // super_admin and school_admin can message anyone
+    if (myRole === 'super_admin' || myRole === 'school_admin') return true
 
-      if (error) {
-        return { error: mapSupabaseError(error.message) }
-      }
+    const allowedPairs: [UserRole, UserRole][] = [
+      ['teacher', 'parent'],
+      ['parent', 'teacher'],
+      ['parent', 'school_admin'],
+      ['school_admin', 'parent'],
+    ]
 
-      return { error: null }
-    } catch (err) {
-      console.error('[AuthContext] resetPassword unexpected error:', err)
-      return { error: 'An unexpected error occurred. Please try again.' }
-    }
-  }, [])
-
-  const role = profile?.role ?? null
+    return allowedPairs.some(([a, b]) => a === myRole && b === targetRole)
+  }
 
   return (
-    <AuthContext.Provider value={{ user, profile, role, loading, signIn, signUp, signOut, resetPassword, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user, session, profile,
+      role: profile?.role ?? null,
+      schoolId: profile?.school_id ?? null,
+      loading,
+      sendOtp, verifyOtp, useInviteToken,
+      signOut, refreshProfile,
+      hasRole, canMessage,
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuthContext(): AuthContextType {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider')
-  }
-  return context
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
 }
