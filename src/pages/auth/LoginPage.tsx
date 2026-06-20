@@ -75,7 +75,7 @@ export default function LoginPage() {
             <Shield className="h-8 w-8 text-blue-300" />
           </div>
           <h1 className="text-2xl font-bold text-white">{t('auth.welcome')}</h1>
-          <p className="text-blue-300 text-sm mt-1">Elohim Education Centre</p>
+          <p className="text-blue-300 text-sm mt-1">{t('auth.subtitle')}</p>
         </div>
 
         {/* Card */}

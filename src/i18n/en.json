@@ -18,7 +18,7 @@
   },
   "auth": {
     "welcome": "Welcome to ShuleConnect",
-    "subtitle": "Elohim Education Centre — Tanga, Tanzania",
+    "subtitle": "School Management Platform",
     "email": "Email Address",
     "emailPlaceholder": "teacher@school.ac.tz",
     "password": "Password",
@@ -33,7 +33,7 @@
     "sendReset": "Send Reset Link",
     "backToSignIn": "Back to sign in",
     "resetSent": "Reset link sent to {{email}}. Check your inbox.",
-    "signUpSuccess": "Account created! Check your email to confirm before signing in.",
+    "signUpSuccess": "Account created! Setting up your school…",
     "passwordMismatch": "Passwords do not match.",
     "passwordTooShort": "Password must be at least 6 characters."
   },
@@ -224,6 +224,20 @@
     "messagingDisabled": "Disabled",
     "save": "Save Settings",
     "saved": "Settings saved"
+  },
+  "onboarding": {
+    "title": "Set Up Your School",
+    "subtitle": "Create your school profile to get started",
+    "welcomeUser": "Signed in as {{name}}",
+    "schoolName": "School Name",
+    "schoolNamePlaceholder": "e.g. Greenfield Academy",
+    "country": "Country",
+    "countryPlaceholder": "e.g. Tanzania",
+    "city": "City",
+    "cityPlaceholder": "e.g. Dar es Salaam",
+    "phone": "Phone (optional)",
+    "createSchool": "Create School & Continue",
+    "adminNote": "You will be set as the School Administrator. You can add teachers and students from the dashboard."
   },
   "common": {
     "loading": "Loading...",

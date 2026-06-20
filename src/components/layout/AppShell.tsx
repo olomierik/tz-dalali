@@ -43,7 +43,7 @@ const BOTTOM_TAB_ITEMS: NavItem[] = [
 
 export function AppShell() {
   const { t } = useTranslation()
-  const { profile, signOut } = useAuth()
+  const { profile, schoolName, signOut } = useAuth()
   const { isOnline, isSyncing, queueLength } = useOfflineSync()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -79,7 +79,7 @@ export function AppShell() {
           {sidebarOpen && (
             <div className="min-w-0">
               <p className="font-bold text-sm leading-tight">{t('app.name')}</p>
-              <p className="text-blue-300 text-xs truncate">Elohim Education Centre</p>
+              <p className="text-blue-300 text-xs truncate">{schoolName ?? t('app.name')}</p>
             </div>
           )}
           <button
@@ -148,7 +148,7 @@ export function AppShell() {
           </div>
           <div>
             <p className="font-bold text-sm">{t('app.name')}</p>
-            <p className="text-blue-300 text-xs">Elohim Education Centre</p>
+            <p className="text-blue-300 text-xs">{schoolName ?? t('app.name')}</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="ml-auto text-blue-300">
             <X className="h-5 w-5" />

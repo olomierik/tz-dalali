@@ -18,7 +18,7 @@
   },
   "auth": {
     "welcome": "Karibu ShuleConnect",
-    "subtitle": "Elohim Education Centre — Tanga, Tanzania",
+    "subtitle": "Mfumo wa Kusimamia Shule",
     "email": "Barua Pepe",
     "emailPlaceholder": "mwalimu@shule.ac.tz",
     "password": "Nenosiri",
@@ -33,7 +33,7 @@
     "sendReset": "Tuma Kiungo",
     "backToSignIn": "Rudi kuingia",
     "resetSent": "Kiungo kimetumwa kwa {{email}}. Angalia kikasha chako.",
-    "signUpSuccess": "Akaunti imefunguliwa! Angalia barua pepe yako kuthibitisha kabla ya kuingia.",
+    "signUpSuccess": "Akaunti imefunguliwa! Inasanidi shule yako…",
     "passwordMismatch": "Manenosiri hayalingani.",
     "passwordTooShort": "Nenosiri liwe na angalau herufi 6."
   },
@@ -224,6 +224,20 @@
     "messagingDisabled": "Imezimwa",
     "save": "Hifadhi Mipangilio",
     "saved": "Mipangilio imehifadhiwa"
+  },
+  "onboarding": {
+    "title": "Sanidi Shule Yako",
+    "subtitle": "Unda wasifu wa shule yako kuanza",
+    "welcomeUser": "Umeingia kama {{name}}",
+    "schoolName": "Jina la Shule",
+    "schoolNamePlaceholder": "mf. Chuo cha Greenfield",
+    "country": "Nchi",
+    "countryPlaceholder": "mf. Tanzania",
+    "city": "Mji",
+    "cityPlaceholder": "mf. Dar es Salaam",
+    "phone": "Simu (hiari)",
+    "createSchool": "Unda Shule na Endelea",
+    "adminNote": "Utakuwa Msimamizi wa Shule. Unaweza kuongeza walimu na wanafunzi kutoka dashibodi."
   },
   "common": {
     "loading": "Inapakia...",
