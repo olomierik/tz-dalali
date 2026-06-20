@@ -10,6 +10,7 @@ interface AuthContextType {
   profile: Profile | null
   role: UserRole | null
   schoolId: string | null
+  schoolName: string | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [schoolName, setSchoolName] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
@@ -37,12 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data as Profile | null
   }, [])
 
+  const fetchSchoolName = useCallback(async (sid: string) => {
+    const { data } = await supabase.from('schools').select('name').eq('id', sid).maybeSingle()
+    setSchoolName(data?.name ?? null)
+  }, [])
+
   const refreshProfile = useCallback(async () => {
     if (!user) return
     const p = await fetchProfile(user.id)
     setProfile(p)
     if (p?.language_pref) i18n.changeLanguage(p.language_pref)
-  }, [user, fetchProfile])
+    if (p?.school_id) fetchSchoolName(p.school_id)
+  }, [user, fetchProfile, fetchSchoolName])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -52,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchProfile(s.user.id).then(p => {
           setProfile(p)
           if (p?.language_pref) i18n.changeLanguage(p.language_pref)
+          if (p?.school_id) fetchSchoolName(p.school_id)
           setLoading(false)
         })
       } else {
@@ -66,14 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchProfile(s.user.id).then(p => {
           setProfile(p)
           if (p?.language_pref) i18n.changeLanguage(p.language_pref)
+          if (p?.school_id) fetchSchoolName(p.school_id)
         })
       } else {
         setProfile(null)
+        setSchoolName(null)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [fetchProfile])
+  }, [fetchProfile, fetchSchoolName])
 
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -86,7 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: { data: { full_name: fullName } },
     })
-    return { error: error?.message ?? null }
+    if (error) return { error: error.message }
+    // Auto sign-in immediately (email confirmation disabled)
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password })
+    return { error: signInErr?.message ?? null }
   }
 
   const resetPassword = async (email: string): Promise<{ error: string | null }> => {
@@ -101,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     setSession(null)
     setProfile(null)
+    setSchoolName(null)
   }
 
   const hasRole = (...roles: UserRole[]): boolean => {
@@ -110,16 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const canMessage = (targetRole: UserRole): boolean => {
     if (!profile) return false
     const myRole = profile.role
-
     if (myRole === 'super_admin' || myRole === 'school_admin') return true
-
     const allowedPairs: [UserRole, UserRole][] = [
       ['teacher', 'parent'],
       ['parent', 'teacher'],
       ['parent', 'school_admin'],
       ['school_admin', 'parent'],
     ]
-
     return allowedPairs.some(([a, b]) => a === myRole && b === targetRole)
   }
 
@@ -128,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user, session, profile,
       role: profile?.role ?? null,
       schoolId: profile?.school_id ?? null,
+      schoolName,
       loading,
       signIn, signUp, resetPassword,
       signOut, refreshProfile,

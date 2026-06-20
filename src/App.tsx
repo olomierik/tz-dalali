@@ -6,6 +6,7 @@ import { AppShell } from '@/components/layout/AppShell'
 
 import LoginPage from '@/pages/auth/LoginPage'
 import ConsentPage from '@/pages/auth/ConsentPage'
+import OnboardingPage from '@/pages/auth/OnboardingPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import AnnouncementsPage from '@/pages/announcements/AnnouncementsPage'
 import AssignmentsPage from '@/pages/assignments/AssignmentsPage'
@@ -35,11 +36,14 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 
   if (!user) return <Navigate to="/login" replace />
 
-  if (profile?.consent_status === 'pending_consent' && profile.role === 'student') {
+  // Logged in but no profile yet → needs to set up their school
+  if (!profile) return <Navigate to="/onboarding" replace />
+
+  if (profile.consent_status === 'pending_consent' && profile.role === 'student') {
     return <Navigate to="/consent" replace />
   }
 
-  if (roles && profile && !roles.includes(profile.role as UserRole)) {
+  if (roles && !roles.includes(profile.role as UserRole)) {
     return <Navigate to="/dashboard" replace />
   }
 
@@ -47,7 +51,15 @@ function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?
 }
 
 function AppRoutes() {
-  const { user, profile } = useAuth()
+  const { user, profile, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-700 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   if (user && profile?.consent_status === 'pending_consent' && profile.role === 'student') {
     return (
@@ -60,7 +72,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/login" element={!user ? <LoginPage /> : <Navigate to={profile ? '/dashboard' : '/onboarding'} replace />} />
+      <Route path="/onboarding" element={user && !profile ? <OnboardingPage /> : <Navigate to={user ? '/dashboard' : '/login'} replace />} />
       <Route path="/consent" element={<ConsentPage />} />
 
       <Route
